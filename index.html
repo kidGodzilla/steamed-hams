@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍔</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Steamed Hams — Voxel Edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="game-root">
+      <canvas id="c"></canvas>
+
+      <div id="hud" class="hidden">
+        <div id="crosshair"></div>
+        <div id="prompt" class="hidden"></div>
+        <div id="objective"></div>
+        <div id="controls-hint">WASD move · Mouse look · E interact · Esc release mouse</div>
+      </div>
+
+      <div id="title-screen">
+        <div class="title-bg"></div>
+        <div class="title-content">
+          <p class="eyebrow">A voxel luncheon</p>
+          <h1>Steamed<br />Hams</h1>
+          <p class="tagline">Superintendent Chalmers is coming for dinner.<br />Make a good impression!</p>
+          <button id="start-btn" type="button">Begin the luncheon</button>
+          <p class="fineprint">Click to capture mouse · Inspired by a certain unforgettable meal</p>
+        </div>
+      </div>
+
+      <div id="dialogue" class="hidden">
+        <div class="dialogue-panel">
+          <div class="speaker" id="speaker"></div>
+          <div class="line" id="line"></div>
+          <div class="choices" id="choices"></div>
+          <button id="dialogue-continue" type="button" class="hidden">Continue</button>
+        </div>
+      </div>
+
+      <div id="end-screen" class="hidden">
+        <div class="end-content">
+          <h2 id="end-title"></h2>
+          <p id="end-body"></p>
+          <button id="replay-btn" type="button">Try again</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

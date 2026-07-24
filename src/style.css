@@ -1,0 +1,337 @@
+:root {
+  --ink: #1a1410;
+  --cream: #f3e6c8;
+  --mustard: #e8b84a;
+  --burnt: #c45c26;
+  --sky-night: #0b1a2e;
+  --panel: rgba(18, 14, 10, 0.88);
+  --line: rgba(243, 230, 200, 0.2);
+  --ok: #7cb86a;
+  --danger: #e85d3a;
+  --font-display: "Bangers", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#game-root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--sky-night);
+  color: var(--cream);
+  font-family: var(--font-body);
+}
+
+#c {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: none;
+}
+
+body.ui-mode #c {
+  cursor: default;
+}
+
+body.ui-mode #crosshair {
+  display: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 2px solid rgba(243, 230, 200, 0.75);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+#prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  transform: translateX(-50%);
+  padding: 0.55rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+#prompt kbd {
+  display: inline-block;
+  margin-right: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--mustard);
+  border-radius: 3px;
+  color: var(--mustard);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+}
+
+#objective {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  max-width: min(22rem, 70vw);
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, rgba(18, 14, 10, 0.9), rgba(40, 28, 16, 0.75));
+  border-left: 3px solid var(--mustard);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  animation: slideIn 0.45s ease-out;
+}
+
+#objective strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--mustard);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  font-weight: 400;
+}
+
+#controls-hint {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  font-size: 0.75rem;
+  opacity: 0.55;
+  letter-spacing: 0.03em;
+}
+
+#title-screen,
+#end-screen {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 10;
+}
+
+.title-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 12, 20, 0.35) 0%, rgba(8, 12, 20, 0.15) 40%, rgba(20, 10, 6, 0.55) 100%);
+  pointer-events: none;
+}
+
+.title-content,
+.end-content {
+  position: relative;
+  text-align: center;
+  padding: 2rem;
+  max-width: 36rem;
+  animation: riseIn 0.8s ease-out;
+}
+
+.eyebrow {
+  font-size: 0.85rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ok);
+  margin-bottom: 0.75rem;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 14vw, 7.5rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  color: var(--mustard);
+  text-shadow:
+    4px 4px 0 var(--ink),
+    0 0 40px rgba(232, 184, 74, 0.35);
+  margin-bottom: 1.25rem;
+}
+
+.tagline {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+.fineprint {
+  margin-top: 1.25rem;
+  font-size: 0.78rem;
+  opacity: 0.5;
+}
+
+button {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: var(--mustard);
+  border: none;
+  border-radius: 4px;
+  padding: 0.85rem 1.75rem;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+#dialogue {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  padding: 0 1.5rem 2.5rem;
+  background: linear-gradient(180deg, transparent 58%, rgba(0, 0, 0, 0.34) 100%);
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.dialogue-panel {
+  width: min(40rem, 100%);
+  background: rgba(18, 14, 10, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem 1.4rem;
+  backdrop-filter: blur(4px);
+  animation: riseIn 0.3s ease-out;
+}
+
+.speaker {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  color: var(--mustard);
+  margin-bottom: 0.45rem;
+}
+
+.line {
+  font-size: 1.05rem;
+  line-height: 1.45;
+  margin-bottom: 1rem;
+  min-height: 2.8em;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.choices button,
+#dialogue-continue {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--cream);
+  background: rgba(243, 230, 200, 0.08);
+  border: 1px solid var(--line);
+  box-shadow: none;
+  border-radius: 4px;
+  padding: 0.7rem 0.9rem;
+}
+
+.choices button:hover,
+#dialogue-continue:hover {
+  background: rgba(232, 184, 74, 0.18);
+  border-color: var(--mustard);
+  transform: none;
+  box-shadow: none;
+}
+
+#end-screen {
+  background:
+    radial-gradient(ellipse at center, rgba(232, 184, 74, 0.15), transparent 55%),
+    rgba(8, 10, 14, 0.92);
+}
+
+#end-screen h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  color: var(--mustard);
+  letter-spacing: 0.03em;
+  margin-bottom: 1rem;
+}
+
+#end-screen p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes auroraDrift {
+  from {
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  to {
+    filter: hue-rotate(18deg) brightness(1.08);
+  }
+}
+
+@media (max-width: 640px) {
+  #controls-hint {
+    display: none;
+  }
+
+  #objective {
+    top: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    max-width: none;
+  }
+}
