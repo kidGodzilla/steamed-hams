@@ -57,6 +57,11 @@ export function prepareDialogAudio() {
   return loadVo();
 }
 
+/** True once dialog.mp3 + cues are confirmed available. */
+export function isDialogVoEnabled() {
+  return voEnabled;
+}
+
 export function stopDialogAudio() {
   activeToken += 1;
   if (!audio) return;

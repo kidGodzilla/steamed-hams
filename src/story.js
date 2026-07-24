@@ -7,6 +7,7 @@
 
 import * as THREE from "three";
 import { playDoorSwing, playFiretruck, playHelpHelp, startFlamesLoop, stopFlamesLoop } from "./audio.js";
+import { isDialogVoEnabled } from "./dialogAudio.js";
 
 export function createStory(refs, lights, ui, player) {
   const _look = new THREE.Vector3();
@@ -728,18 +729,24 @@ export function createStory(refs, lights, ui, player) {
       choices: [
         {
           text: "Y— You know th— One thing I sh— 'Scuse me for one second...",
-          audio: "skinner_excuse_me",
           next: () => {
             ui.openDialogue({
-              speaker: "Chalmers",
-              line: "Of course.",
-              audio: "chalmers_of_course",
+              speaker: "Skinner",
+              line: "Y— You know th— One thing I sh— 'Scuse me for one second...",
+              audio: "skinner_excuse_me",
               continue: () => {
-                shutKitchenDoor();
-                approachKitchenDoor();
-                setStage("check_kitchen");
-                ui.closeDialogue();
-                ui.toast("Excuse yourself — check the kitchen.");
+                ui.openDialogue({
+                  speaker: "Chalmers",
+                  line: "Of course.",
+                  audio: "chalmers_of_course",
+                  continue: () => {
+                    shutKitchenDoor();
+                    approachKitchenDoor();
+                    setStage("check_kitchen");
+                    ui.closeDialogue();
+                    ui.toast("Excuse yourself — check the kitchen.");
+                  },
+                });
               },
             });
           },
@@ -891,7 +898,8 @@ export function createStory(refs, lights, ui, player) {
       player.state.lookAnim = null;
     }
     lookAtMother();
-    playHelpHelp();
+    // Mother's line is in the dialog VO when present
+    if (!isDialogVoEnabled()) playHelpHelp();
 
     const oddFellow =
       state.suspicion <= 2
@@ -905,8 +913,14 @@ export function createStory(refs, lights, ui, player) {
       choices: [
         {
           text: "No, mother, it's just the Northern Lights.",
-          audio: "skinner_northern_lights",
-          next: () => chalmersFarewell(oddFellow),
+          next: () => {
+            ui.openDialogue({
+              speaker: "Skinner",
+              line: "No, mother, it's just the Northern Lights.",
+              audio: "skinner_northern_lights",
+              continue: () => chalmersFarewell(oddFellow),
+            });
+          },
         },
         {
           text: "YES Mother! HELPERS! THE HOUSE!",
