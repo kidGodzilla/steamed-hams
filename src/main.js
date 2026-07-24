@@ -90,7 +90,7 @@ const ui = {
       canvas.requestPointerLock();
     }
   },
-  showEnd(title, body) {
+  showEnd(title, body, opts = {}) {
     ui.clearToast();
     document.exitPointerLock?.();
     document.body.classList.add("ui-mode");
@@ -98,6 +98,7 @@ const ui = {
     player.state.canMove = false;
     endTitle.textContent = title;
     endBody.textContent = body;
+    document.getElementById("replay-btn").textContent = opts.success ? "Play Again" : "Try again";
     endScreen.classList.remove("hidden");
     hud.classList.add("hidden");
   },
@@ -141,6 +142,9 @@ function startGame() {
   if (refs.kitchenSash) {
     refs.kitchenSash.rotation.y = refs.kitchenSash.userData.ajarRotY ?? -1.25;
   }
+  if (refs.apron) refs.apron.visible = true;
+  if (refs.mother) refs.mother.visible = true;
+  if (refs.motherWindowGlass) refs.motherWindowGlass.visible = true;
   refs.chalmers.position.set(0, 0.35, 5.5);
   refs.chalmers.rotation.y = Math.PI;
   if (refs.skinner) refs.skinner.visible = false;
@@ -200,6 +204,52 @@ function gatherTargets() {
   return targets;
 }
 
+function nearKitchenWindow() {
+  if (!story?.canInteract?.("kitchenWindow")) return false;
+  const p = player.state.pos;
+  const dx = p.x - (-5.05);
+  const dz = p.z - (-5.3);
+  return Math.hypot(dx, dz) < 2.6;
+}
+
+/** Closer sill zone — walking into it counts as climbing out. */
+function walkingIntoKitchenWindow() {
+  if (!story?.canInteract?.("kitchenWindow")) return false;
+  const p = player.state.pos;
+  return p.x < -4.15 && p.z > -6.7 && p.z < -4.3;
+}
+
+function walkingIntoYardExit() {
+  if (!story?.canInteract?.("yardExit")) return false;
+  if (!refs.yardExit?.visible) return false;
+  const p = player.state.pos;
+  // Match yardExit volume (-2,0,6)+(4,2.5,3), slightly padded
+  return p.x > -2.4 && p.x < 2.4 && p.z > 5.4 && p.z < 9.6;
+}
+
+function isMoving() {
+  const k = player.state.keys;
+  return k.has("KeyW") || k.has("KeyA") || k.has("KeyS") || k.has("KeyD");
+}
+
+function tryWalkInteract() {
+  if (!running || !story || !player.state.canMove || !player.state.locked) return;
+  if (!isMoving()) return;
+
+  if (walkingIntoKitchenWindow()) {
+    story.interact("kitchenWindow");
+    return;
+  }
+  if (walkingIntoYardExit()) {
+    story.interact("yardExit");
+  }
+}
+
+function inBackRoom() {
+  const p = player.state.pos;
+  return p.x > 1.2 && p.x < 5.7 && p.z > -7.9 && p.z < -3.35;
+}
+
 function updateFocus() {
   focused = null;
 
@@ -219,11 +269,42 @@ function updateFocus() {
     const label = story.labelFor(id, obj.userData.label);
     if (!label) continue;
     focused = obj;
-    // Interact prompt wins over toasts so hints don't hide E
     toastTimer = 0;
     promptEl.innerHTML = `<kbd>E</kbd> ${label}`;
     promptEl.classList.remove("hidden");
     break;
+  }
+
+  // Standing in/at the sill often puts you inside the hitbox — use proximity
+  if (!focused && nearKitchenWindow() && refs.kitchenWindow) {
+    const label = story.labelFor("kitchenWindow", "Climb out the kitchen window");
+    if (label) {
+      focused = refs.kitchenWindow;
+      toastTimer = 0;
+      promptEl.innerHTML = `<kbd>E</kbd> ${label}`;
+      promptEl.classList.remove("hidden");
+    }
+  }
+
+  if (!focused && story.canInteract("yardExit") && refs.yardExit?.visible) {
+    const label = story.labelFor("yardExit", "See Chalmers out");
+    if (label && walkingIntoYardExit()) {
+      focused = refs.yardExit;
+      toastTimer = 0;
+      promptEl.innerHTML = `<kbd>E</kbd> ${label}`;
+      promptEl.classList.remove("hidden");
+    }
+  }
+
+  // Anywhere in the living / back room
+  if (!focused && inBackRoom() && refs.checkMother) {
+    const label = story.labelFor("checkMother", "Check on Mother");
+    if (label) {
+      focused = refs.checkMother;
+      toastTimer = 0;
+      promptEl.innerHTML = `<kbd>E</kbd> ${label}`;
+      promptEl.classList.remove("hidden");
+    }
   }
 
   if (!focused) {
@@ -248,7 +329,10 @@ function frame() {
     // Keep updating during dialogue so look-at pivots can finish
     player.update(dt);
     updateWorld(refs, t);
-    if (player.state.canMove) updateFocus();
+    if (player.state.canMove) {
+      updateFocus();
+      tryWalkInteract();
+    }
   } else if (!running) {
     // Idle camera drift on title — look at the front of the house
     camera.position.set(Math.sin(t * 0.12) * 3, 3.2, 14);

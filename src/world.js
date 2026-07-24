@@ -43,7 +43,11 @@ export function buildWorld(scene) {
 
   // Exterior walls — front opening is exactly 2 units (x -1..1) to match the door
   addBox(house, PALETTE.wall, -6, 0, -8, 13, extWallH, 1);
-  addBox(house, PALETTE.wall, -6, 0, 2, 5, extWallH, 1); // left of door: x -6..-1
+  // Left of door with cutout for Mother's upstairs window (x -4.08..-2.52, y 4.37..5.68)
+  addBox(house, PALETTE.wall, -6, 0, 2, 1.92, extWallH, 1); // far left: x -6..-4.08
+  addBox(house, PALETTE.wall, -2.52, 0, 2, 1.52, extWallH, 1); // beside door: x -2.52..-1
+  addBox(house, PALETTE.wall, -4.08, 0, 2, 1.56, 4.37, 1); // under mother's window
+  addBox(house, PALETTE.wall, -4.08, 5.68, 2, 1.56, extWallH - 5.68, 1); // over mother's window
   addBox(house, PALETTE.wall, 1, 0, 2, 6, extWallH, 1); // right of door: x 1..7
   addBox(house, PALETTE.wall, -1, 3, 2, 2, 1, 1); // lintel over door
   addBox(house, PALETTE.wall, -1, 4, 2, 2, extWallH - 4, 1); // story above door
@@ -107,7 +111,8 @@ export function buildWorld(scene) {
   house.add(kitchenSash);
   refs.kitchenSash = kitchenSash;
 
-  const kitchenWindow = addBox(house, 0xff00ff, -5.55, 0.6, -6.5, 2.4, 2.6, 2.5, {
+  // Thin interact volume at the opening — avoids swallowing the player when close
+  const kitchenWindow = addBox(house, 0xff00ff, -5.5, 0.7, -6.5, 0.85, 2.5, 2.5, {
     name: "kitchenWindow",
     userData: { id: "kitchenWindow", label: "Climb out the kitchen window" },
   });
@@ -117,12 +122,48 @@ export function buildWorld(scene) {
   kitchenWindow.material.depthWrite = false;
   interactables.push(kitchenWindow);
   refs.kitchenWindow = kitchenWindow;
+  // Approach trigger further into the kitchen (raycast-friendly from mid-room)
+  const kitchenWindowApproach = addBox(house, 0xff00ff, -4.65, 0.7, -6.5, 1.1, 2.5, 2.5, {
+    name: "kitchenWindowApproach",
+    userData: { id: "kitchenWindow", label: "Climb out the kitchen window" },
+  });
+  kitchenWindowApproach.material = kitchenWindowApproach.material.clone();
+  kitchenWindowApproach.material.transparent = true;
+  kitchenWindowApproach.material.opacity = 0;
+  kitchenWindowApproach.material.depthWrite = false;
+  interactables.push(kitchenWindowApproach);
+  refs.kitchenWindowApproach = kitchenWindowApproach;
 
   // Front windows on the exterior face (z≈3) — ground + upper story
   windowUnit(-4.2, 1, 2.95, 1.8, 1.8, "z");
   windowUnit(3.2, 1, 2.95, 1.8, 1.8, "z");
-  windowUnit(-4.2, 4.35, 2.95, 1.6, 1.35, "z");
   windowUnit(3.2, 4.35, 2.95, 1.6, 1.35, "z");
+
+  // Mother's upstairs window — real open frame (not a solid white slab)
+  addBox(house, PALETTE.trim, -4.2, 4.25, 2.9, 1.8, 0.12, 0.15); // sill
+  addBox(house, PALETTE.trim, -4.2, 5.68, 2.9, 1.8, 0.12, 0.15); // header
+  addBox(house, PALETTE.trim, -4.2, 4.37, 2.9, 0.12, 1.31, 0.15); // left jamb
+  addBox(house, PALETTE.trim, -2.52, 4.37, 2.9, 0.12, 1.31, 0.15); // right jamb
+  const motherWindowGlass = addBox(house, PALETTE.window, -4.08, 4.37, 2.95, 1.56, 1.31, 0.1, {
+    emissive: 0x224466,
+    emissiveIntensity: 0.25,
+    noShadow: true,
+  });
+  refs.motherWindowGlass = motherWindowGlass;
+
+  // Mother — in the upstairs opening (visible from the yard when glass is removed)
+  const mother = new THREE.Group();
+  mother.name = "mother";
+  mother.position.set(-3.3, 4.4, 2.55);
+  addBox(mother, 0x2a2430, -0.22, 0, -0.1, 0.55, 1.05, 0.22, { noShadow: true });
+  addBox(mother, PALETTE.skin, -0.14, 1.0, -0.12, 0.38, 0.35, 0.28, { noShadow: true });
+  addBox(mother, 0x6a5a4a, -0.16, 1.28, -0.14, 0.42, 0.2, 0.32, { noShadow: true });
+  mother.visible = true;
+  mother.traverse((o) => {
+    if (o.isMesh) o.raycast = () => {};
+  });
+  house.add(mother);
+  refs.mother = mother;
 
   // Attached garage (right / +X)
   addBox(house, PALETTE.floor, 6.25, 0, -3.2, 5.2, 0.22, 5.8, { noShadow: true });
@@ -209,6 +250,15 @@ export function buildWorld(scene) {
   addBox(house, PALETTE.counter, -4.35, 0.25, -7.55, 2.15, 1.05, 1.0);
   addBox(house, PALETTE.wood, -4.2, 2.3, -7.55, 1.9, 1.2, 0.7); // cabinets
   addBox(house, PALETTE.fridge, -2.9, 0.25, -7.6, 0.85, 2.4, 0.9);
+
+  // Apron on a hook — Skinner "takes it off" before the window escape
+  const apron = new THREE.Group();
+  apron.name = "apron";
+  apron.position.set(-5.55, 1.35, -6.35);
+  addBox(apron, 0xf0e8d8, 0, 0, 0, 0.08, 0.95, 0.55, { noShadow: true });
+  addBox(apron, 0xd8c8b0, 0.02, 0.7, 0.08, 0.06, 0.12, 0.4, { noShadow: true }); // straps
+  house.add(apron);
+  refs.apron = apron;
 
   // Oven — white exterior, dark cavity (away from the window approach)
   addBox(house, PALETTE.stoveWhite, -5.0, 0.25, -7.4, 1.7, 1.85, 1.25);
@@ -475,6 +525,18 @@ export function buildWorld(scene) {
     opacity: 0.55,
     noShadow: true,
   });
+  // Napkins + silverware
+  addBox(house, 0xf5f0e6, 0.85, 0.44, 0.35, 0.22, 0.03, 0.28, { noShadow: true });
+  addBox(house, 0xf5f0e6, 2.15, 0.44, 0.35, 0.22, 0.03, 0.28, { noShadow: true });
+  addBox(house, 0xc0c0c0, 0.95, 0.45, -0.25, 0.04, 0.02, 0.35, { noShadow: true });
+  addBox(house, 0xc0c0c0, 2.25, 0.45, -0.25, 0.04, 0.02, 0.35, { noShadow: true });
+  // Center candle
+  addBox(house, 0xf5f0e0, 1.85, 0.44, -0.15, 0.1, 0.35, 0.1, { noShadow: true });
+  addBox(house, 0xffaa44, 1.88, 0.78, -0.12, 0.06, 0.1, 0.06, {
+    emissive: 0xff8822,
+    emissiveIntensity: 0.7,
+    noShadow: true,
+  });
 
   const wineService = new THREE.Group();
   wineService.name = "wineService";
@@ -535,6 +597,29 @@ export function buildWorld(scene) {
     emissiveIntensity: 0.4,
     noShadow: true,
   });
+
+  // Stairs door — Mother's room is upstairs / unused; you can only call to her
+  addBox(house, PALETTE.woodDark, 3.85, 0.28, -7.72, 0.12, 2.55, 0.14);
+  addBox(house, PALETTE.woodDark, 5.15, 0.28, -7.72, 0.12, 2.55, 0.14);
+  addBox(house, PALETTE.woodDark, 3.85, 2.7, -7.72, 1.42, 0.18, 0.14);
+  addBox(house, PALETTE.door, 4.0, 0.28, -7.7, 1.15, 2.4, 0.12);
+  addBox(house, 0xc4a35a, 4.95, 1.4, -7.62, 0.12, 0.12, 0.08, {
+    emissive: 0x665522,
+    emissiveIntensity: 0.2,
+    noShadow: true,
+  });
+  const checkMother = addBox(house, 0xff00ff, 1.4, 0.2, -7.7, 4.4, 2.6, 4.4, {
+    name: "checkMother",
+    userData: { id: "checkMother", label: "Check on Mother" },
+  });
+  checkMother.material = checkMother.material.clone();
+  checkMother.material.transparent = true;
+  checkMother.material.opacity = 0;
+  checkMother.material.depthWrite = false;
+  // Don't steal raycasts from furniture — proximity handles the prompt
+  checkMother.raycast = () => {};
+  interactables.push(checkMother);
+  refs.checkMother = checkMother;
 
   const auroraView = addBox(house, PALETTE.window, 5.85, 1, -6.4, 0.18, 2.1, 2.4, {
     name: "auroraWindow",
@@ -703,8 +788,9 @@ export function buildWorld(scene) {
   addBox(tree, PALETTE.hedge, -1.0 * s, 3.2 * s, -1.0 * s, 2.0 * s, 1.4 * s, 2.0 * s, {
     noShadow: true,
   });
-  tree.position.set(-4.5, 0, 6.5);
+  tree.position.set(4.5, 0, 6.5);
   scene.add(tree);
+  refs.tree = tree;
 
   // Mailbox
   addBox(scene, 0x333333, 2.6, 0, 7.2, 0.15, 1.25, 0.15);

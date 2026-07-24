@@ -6,7 +6,7 @@
  */
 
 import * as THREE from "three";
-import { playDoorSwing } from "./audio.js";
+import { playDoorSwing, playFiretruck, playHelpHelp, startFlamesLoop, stopFlamesLoop } from "./audio.js";
 
 export function createStory(refs, lights, ui, player) {
   const _look = new THREE.Vector3();
@@ -67,6 +67,7 @@ export function createStory(refs, lights, ui, player) {
     // Flames take over — hold the smoke while looking inside
     refs.kitchenSmoke.visible = false;
     lights.fire.intensity = 3.2;
+    startFlamesLoop({ volume: 0.5 });
   }
 
   function closeOven() {
@@ -78,6 +79,7 @@ export function createStory(refs, lights, ui, player) {
     refs.kitchenSmoke.visible = true;
     refs.chimneySmoke.visible = true;
     lights.fire.intensity = 0.25;
+    stopFlamesLoop();
   }
 
   function hideKitchenDoor() {
@@ -104,6 +106,7 @@ export function createStory(refs, lights, ui, player) {
     lights.fire.intensity = 3.5;
     if (lights.inferno) lights.inferno.intensity = 4.5;
     if (lights.kitchen) lights.kitchen.intensity = 0.15;
+    startFlamesLoop({ volume: 0.7 });
   }
 
   function revealHouseFire() {
@@ -117,6 +120,7 @@ export function createStory(refs, lights, ui, player) {
     if (lights.inferno) lights.inferno.intensity = 4;
     lights.houseFire.intensity = 4.5;
     if (lights.porch) lights.porch.intensity = 0.4;
+    startFlamesLoop({ volume: 0.85 });
   }
 
   function seatChalmers() {
@@ -232,14 +236,37 @@ export function createStory(refs, lights, ui, player) {
     player.faceToward(_look, { headY: _look.y, duration: 0.55 });
   }
 
+  /** Dining-room approach — far enough back to open the kitchen door cleanly. */
+  function approachKitchenDoor() {
+    if (!player) return;
+    player.state.pos.set(0.85, 1.7, -0.85);
+    player.state.lookAnim = null;
+    if (refs.kitchenDoor) {
+      refs.kitchenDoor.getWorldPosition(_look);
+      _look.y = 1.55;
+    } else {
+      _look.set(-1.55, 1.55, -2.0);
+    }
+    player.faceToward(_look, { headY: 1.55, duration: 0.4 });
+  }
+
   function canInteract(id) {
     switch (id) {
       case "frontDoor":
-      case "chalmers":
         return state.stage === "await_doorbell";
+      case "chalmers":
+        return (
+          state.stage === "await_doorbell" ||
+          state.stage === "discover_fire" ||
+          (state.stage === "escape_window" && !state.windowAttempted)
+        );
       case "stove":
         return (
           (state.stage === "discover_fire" || state.stage === "escape_window") && !state.fireSeen
+        );
+      case "extinguisher":
+        return (
+          (state.stage === "discover_fire" || state.stage === "escape_window") && state.fireSeen
         );
       case "kitchenWindow":
         return state.stage === "escape_window" && state.fireSeen && !state.windowAttempted;
@@ -251,6 +278,8 @@ export function createStory(refs, lights, ui, player) {
         return state.stage === "check_kitchen" && !state.kitchenChecked;
       case "yardExit":
         return state.stage === "see_out";
+      case "checkMother":
+        return state.stage !== "await_doorbell" && state.stage !== "done";
       default:
         return false;
     }
@@ -258,10 +287,13 @@ export function createStory(refs, lights, ui, player) {
 
   function labelFor(id, fallback) {
     if (!canInteract(id)) return null;
+    if (id === "chalmers" && state.stage !== "await_doorbell") return "Talk to Chalmers";
     if (id === "stove" && !state.fireSeen) return "Open the oven";
+    if (id === "extinguisher") return "Use the fire extinguisher";
     if (id === "kitchenWindow") return "Climb out the kitchen window";
     if (id === "kitchenDoor") return "Open the kitchen door";
     if (id === "yardExit") return "See Chalmers out";
+    if (id === "checkMother") return "Check on Mother";
     return fallback;
   }
 
@@ -270,15 +302,24 @@ export function createStory(refs, lights, ui, player) {
 
     switch (id) {
       case "frontDoor":
-      case "chalmers":
         beginArrival();
+        break;
+
+      case "chalmers":
+        if (state.stage === "await_doorbell") beginArrival();
+        else chatChalmersWaiting();
         break;
 
       case "stove":
         if (!state.fireSeen) discoverFire();
         break;
 
+      case "extinguisher":
+        fail("You put out the roast — and any hope of an unforgettable luncheon.");
+        break;
+
       case "kitchenWindow":
+        if (refs.apron) refs.apron.visible = false;
         attemptWindowEscape();
         break;
 
@@ -316,7 +357,25 @@ export function createStory(refs, lights, ui, player) {
       case "yardExit":
         lawnEnding();
         break;
+
+      case "checkMother":
+        talkToMotherUpstairs();
+        break;
     }
+  }
+
+  function talkToMotherUpstairs() {
+    ui.openDialogue({
+      speaker: "Mother",
+      line: "Is the house on fire? Are we going to die?",
+      continue: () => {
+        ui.openDialogue({
+          speaker: "Skinner",
+          line: "Not now, Mother!",
+          continue: () => ui.closeDialogue(),
+        });
+      },
+    });
   }
 
   function beginArrival() {
@@ -331,19 +390,39 @@ export function createStory(refs, lights, ui, player) {
             ui.openDialogue({
               speaker: "Chalmers",
               line: "Nyeh...",
-              continue: () => {
-                playDoorSwing({ volume: 0.85 });
-                refs.door.visible = false;
-                seatChalmers();
-                startOvenSmoking();
-                hideKitchenDoor();
-                setStage("discover_fire");
-                ui.closeDialogue();
-                ui.toast("He's seated. Something is smoking in the kitchen...");
-              },
+              continue: () => finishArrival(),
             });
           },
         });
+      },
+    });
+  }
+
+  function finishArrival() {
+    playDoorSwing({ volume: 0.85 });
+    refs.door.visible = false;
+    seatChalmers();
+    startOvenSmoking();
+    hideKitchenDoor();
+    setStage("discover_fire");
+    ui.closeDialogue();
+    ui.toast("He's seated. Something is smoking in the kitchen...");
+  }
+
+  function chatChalmersWaiting() {
+    lookAtChalmers();
+    const lines = [
+      "Well? The luncheon isn't going to serve itself, Seymour.",
+      "I can wait. I'm a patient man. Ish.",
+      "Something smells... ambitious.",
+    ];
+    const line = lines[Math.floor(Math.random() * lines.length)];
+    ui.openDialogue({
+      speaker: "Chalmers",
+      line,
+      continue: () => {
+        ui.closeDialogue();
+        ui.toast("Something is smoking in the kitchen...");
       },
     });
   }
@@ -391,39 +470,53 @@ export function createStory(refs, lights, ui, player) {
       line: "SEYMOUR!!!!!!!",
       continue: () => {
         ui.openDialogue({
-          speaker: "Skinner",
-          line: "Superintendent, I was just— uh, just stretching my calves on the windowsill. Isometric exercise! Care to join me?",
-          continue: () => {
-            lookAtOven();
+          speaker: "Chalmers",
+          line: "What are you doing?",
+          choices: [
+            {
+              text: "Just stretching my calves on the windowsill. Isometric exercise! Care to join me?",
+              next: () => smokeQuestion(),
+            },
+            {
+              text: "Escaping to buy hamburgers. The roast is ruined.",
+              next: () => fail("You confessed mid-escape. Chalmers does not care for isometric honesty."),
+            },
+          ],
+        });
+      },
+    });
+  }
+
+  function smokeQuestion() {
+    lookAtOven();
+    ui.openDialogue({
+      speaker: "Chalmers",
+      line: "Why is there smoke coming out of your oven, Seymour?",
+      choices: [
+        {
+          text: "That isn't smoke. It's steam from the steamed clams we're having!",
+          next: () => {
+            lookAtChalmers();
             ui.openDialogue({
               speaker: "Chalmers",
-              line: "Why is there smoke coming out of your oven, Seymour?",
+              line: "Uh-huh.",
               continue: () => {
+                seatChalmers();
+                hideKitchenDoor();
                 ui.openDialogue({
                   speaker: "Skinner",
-                  line: "Uh... Ooh! That isn't smoke. It's steam. Steam from the steamed clams we're having. Mmmm. Steamed Clams!",
-                  continue: () => {
-                    lookAtChalmers();
-                    ui.openDialogue({
-                      speaker: "Chalmers",
-                      line: "Uh-huh.",
-                      continue: () => {
-                        seatChalmers();
-                        hideKitchenDoor();
-                        ui.openDialogue({
-                          speaker: "Skinner",
-                          line: "Whew...",
-                          continue: () => finishWindowEscape(),
-                        });
-                      },
-                    });
-                  },
+                  line: "Whew...",
+                  continue: () => finishWindowEscape(),
                 });
               },
             });
           },
-        });
-      },
+        },
+        {
+          text: "Because the kitchen is on fire.",
+          next: () => fail("You said the quiet part loud. Chalmers cancels the luncheon — and possibly your career."),
+        },
+      ],
     });
   }
 
@@ -433,6 +526,7 @@ export function createStory(refs, lights, ui, player) {
         refs.kitchenSash.userData.openRotY ?? -1.35;
     }
     hideKitchenDoor();
+    lookAtKrusty();
 
     ui.openDialogue({
       speaker: "Narrator",
@@ -452,19 +546,22 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "I thought we were having steamed clams.",
-      continue: () => {
-        ui.openDialogue({
-          speaker: "Skinner",
-          line: "D'oh no, I said Steamed Hams! That's what I call hamburgers.",
-          continue: () => {
+      choices: [
+        {
+          text: "D'oh no, I said Steamed Hams! That's what I call hamburgers.",
+          next: () => {
             ui.openDialogue({
               speaker: "Chalmers",
               line: "You call hamburgers 'steamed hams'?",
               continue: () => regionBit(),
             });
           },
-        });
-      },
+        },
+        {
+          text: "You're right. These are Krusty Burgers. I panicked.",
+          next: () => fail("The confession arrives before dessert. Chalmers leaves hungry and furious."),
+        },
+      ],
     });
   }
 
@@ -509,10 +606,7 @@ export function createStory(refs, lights, ui, player) {
         },
         {
           text: "Perhaps Utica is behind the times, sir.",
-          next: () => {
-            state.suspicion += 2;
-            fail("Never insult a man's hometown over steamed hams.");
-          },
+          next: () => fail("Never insult a man's hometown over steamed hams."),
         },
       ],
     });
@@ -526,11 +620,10 @@ export function createStory(refs, lights, ui, player) {
         ui.openDialogue({
           speaker: "Chalmers",
           line: "You know, these hamburgers are quite similar to the ones they have at Krusty Burger.",
-          continue: () => {
-            ui.openDialogue({
-              speaker: "Skinner",
-              line: "Oh ho ho ho no! Patented Skinner Burgers; Old family recipe!",
-              continue: () => {
+          choices: [
+            {
+              text: "Oh ho ho ho no! Patented Skinner Burgers; Old family recipe!",
+              next: () => {
                 ui.openDialogue({
                   speaker: "Chalmers",
                   line: "For steamed hams?",
@@ -543,8 +636,12 @@ export function createStory(refs, lights, ui, player) {
                   },
                 });
               },
-            });
-          },
+            },
+            {
+              text: "Yes — I bought them at Krusty Burger twenty minutes ago.",
+              next: () => fail("You fold like a paper napkin. Chalmers does not finish his 'steamed ham.'"),
+            },
+          ],
         });
       },
     });
@@ -554,24 +651,28 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "Yes, and you call them steamed hams, despite the fact that they are obviously grilled.",
-      continue: () => {
-        ui.openDialogue({
-          speaker: "Skinner",
-          line: "Y— You know th— One thing I sh— 'Scuse me for one second...",
-          continue: () => {
+      choices: [
+        {
+          text: "Y— You know th— One thing I sh— 'Scuse me for one second...",
+          next: () => {
             ui.openDialogue({
               speaker: "Chalmers",
               line: "Of course.",
               continue: () => {
                 shutKitchenDoor();
+                approachKitchenDoor();
                 setStage("check_kitchen");
                 ui.closeDialogue();
                 ui.toast("Excuse yourself — check the kitchen.");
               },
             });
           },
-        });
-      },
+        },
+        {
+          text: "Fine. They're grilled. I have been lying this entire time.",
+          next: () => fail("The truth sets you free — from employment, housing, and lunch invitations."),
+        },
+      ],
     });
   }
 
@@ -612,38 +713,40 @@ export function createStory(refs, lights, ui, player) {
   function auroraExchange() {
     ui.openDialogue({
       speaker: "Chalmers",
-      line: "A—Aurora Borealis? At this time of year! At this time of day! In this part of the country! Localized entirely within your kitchen?!?",
+      line: "A—Aurora Borealis?",
       continue: () => {
         ui.openDialogue({
-          speaker: "Skinner",
-          line: "Yes.",
+          speaker: "Chalmers",
+          line: "At this time of year? At this time of day!?",
           continue: () => {
             ui.openDialogue({
               speaker: "Chalmers",
-              line: "May I see it?",
-              choices: [
-                {
-                  text: "No.",
-                  next: () => {
+              line: "In this part of the country!?",
+              continue: () => {
+                ui.openDialogue({
+                  speaker: "Chalmers",
+                  line: "Localized entirely within your kitchen?!?",
+                  continue: () => {
                     ui.openDialogue({
                       speaker: "Skinner",
-                      line: "No.",
+                      line: "...",
                       continue: () => {
-                        beginEscort();
-                        ui.closeDialogue();
-                        ui.toast("See the Superintendent out.");
+                        ui.openDialogue({
+                          speaker: "Skinner",
+                          line: ".....",
+                          continue: () => {
+                            ui.openDialogue({
+                              speaker: "Skinner",
+                              line: "Yes.",
+                              continue: () => mayISeeIt(),
+                            });
+                          },
+                        });
                       },
                     });
                   },
-                },
-                {
-                  text: "Of course! Right this way!",
-                  next: () => {
-                    state.suspicion += 3;
-                    fail("You invited him into the inferno. The facade is ash.");
-                  },
-                },
-              ],
+                });
+              },
             });
           },
         });
@@ -651,21 +754,57 @@ export function createStory(refs, lights, ui, player) {
     });
   }
 
+  function mayISeeIt() {
+    ui.openDialogue({
+      speaker: "Chalmers",
+      line: "May I see it?",
+      choices: [
+        {
+          text: "No.",
+          next: () => {
+            ui.openDialogue({
+              speaker: "Skinner",
+              line: "No.",
+              continue: () => {
+                beginEscort();
+                ui.closeDialogue();
+                ui.toast("See the Superintendent out.");
+              },
+            });
+          },
+        },
+        {
+          text: "Of course! Right this way!",
+          next: () => fail("You invited him into the inferno. The facade is ash."),
+        },
+      ],
+    });
+  }
+
+  function lookAtMother() {
+    if (!player || !refs.mother) return;
+    refs.mother.getWorldPosition(_look);
+    _look.y += 0.8;
+    player.faceToward(_look, { headY: _look.y, duration: 0.5 });
+  }
+
   function lawnEnding() {
     chalmersOutside();
     skinnerOutside();
     refs.yardExit.visible = false;
     if (refs.door) refs.door.visible = false;
+    if (refs.mother) refs.mother.visible = true;
+    // Window open — glass gone so Mother reads from the yard
+    if (refs.motherWindowGlass) refs.motherWindowGlass.visible = false;
 
-    // Spectator angle: both characters on the lawn, house behind them
     if (player) {
       player.state.pos.set(-3.2, 1.75, 13.2);
       player.state.yaw = -0.55;
       player.state.pitch = -0.08;
       player.state.lookAnim = null;
-      _look.set(0.6, 1.4, 9.2);
-      player.faceToward(_look, { headY: 1.45, duration: 0.35 });
     }
+    lookAtMother();
+    playHelpHelp();
 
     const oddFellow =
       state.suspicion <= 2
@@ -675,27 +814,36 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Mother",
       line: "Seymour! The house is on fire!",
+      choices: [
+        {
+          text: "No, mother, it's just the Northern Lights.",
+          next: () => chalmersFarewell(oddFellow),
+        },
+        {
+          text: "YES Mother! HELPERS! THE HOUSE!",
+          next: () =>
+            fail("You broke character in the final mile. Chalmers flees. The firetruck does not have to guess why."),
+        },
+      ],
+    });
+  }
+
+  function chalmersFarewell(oddFellow) {
+    lookAtChalmers();
+    ui.openDialogue({
+      speaker: "Chalmers",
+      line: oddFellow,
       continue: () => {
-        ui.openDialogue({
-          speaker: "Skinner",
-          line: "No, mother, it's just the Northern Lights.",
-          continue: () => {
-            ui.openDialogue({
-              speaker: "Chalmers",
-              line: oddFellow,
-              continue: () => {
-                revealHouseFire();
-                if (refs.firetruck) refs.firetruck.visible = true;
-                setStage("done");
-                ui.closeDialogue();
-                ui.showEnd(
-                  "Unforgettable!",
-                  "Chalmers tip-toes away, still calling them steamed hams. Somewhere behind him, a firetruck begins to wail.",
-                );
-              },
-            });
-          },
-        });
+        revealHouseFire();
+        if (refs.firetruck) refs.firetruck.visible = true;
+        playFiretruck();
+        setStage("done");
+        ui.closeDialogue();
+        ui.showEnd(
+          "Unforgettable!",
+          "Chalmers tip-toes away, still calling them steamed hams. Somewhere behind him, a firetruck begins to wail.",
+          { success: true },
+        );
       },
     });
   }
