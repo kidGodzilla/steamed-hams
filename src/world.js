@@ -53,28 +53,49 @@ export function buildWorld(scene) {
 
   // Exterior walls — front opening is exactly 2 units (x -1..1) to match the door
   addBox(house, PALETTE.wall, -6, 0, -8, 13, extWallH, 1);
-  // Left of door with cutout for Mother's upstairs window (x -4.08..-2.52, y 4.37..5.68)
-  addBox(house, PALETTE.wall, -6, 0, 2, 1.92, extWallH, 1); // far left: x -6..-4.08
-  addBox(house, PALETTE.wall, -2.52, 0, 2, 1.52, extWallH, 1); // beside door: x -2.52..-1
-  addBox(house, PALETTE.wall, -4.08, 0, 2, 1.56, 4.37, 1); // under mother's window
-  addBox(house, PALETTE.wall, -4.08, 5.68, 2, 1.56, extWallH - 5.68, 1); // over mother's window
-  addBox(house, PALETTE.wall, 1, 0, 2, 6, extWallH, 1); // right of door: x 1..7
+  // Front wall with real cutouts for the three windows + Mother's (avoids glass z-fighting the slab)
+  // Openings: L ground (-4.2..-2.4, y 1..2.8), Mother (-4.08..-2.52, y 4.37..5.68),
+  //           R ground (3.2..5.0, y 1..2.8), R upper (3.2..4.8, y 4.35..5.7)
+  addBox(house, PALETTE.wall, -6, 0, 2, 1.8, extWallH, 1); // far left: x -6..-4.2
+  addBox(house, PALETTE.wall, -2.4, 0, 2, 1.4, extWallH, 1); // beside door: x -2.4..-1
+  // Left window column x -4.2..-2.4
+  addBox(house, PALETTE.wall, -4.2, 0, 2, 1.8, 1, 1); // under L ground window
+  addBox(house, PALETTE.wall, -4.2, 2.8, 2, 1.8, 1.57, 1); // between L ground and Mother
+  addBox(house, PALETTE.wall, -4.2, 4.37, 2, 0.12, 1.31, 1); // L of Mother (x -4.2..-4.08)
+  addBox(house, PALETTE.wall, -2.52, 4.37, 2, 0.12, 1.31, 1); // R of Mother (x -2.52..-2.4)
+  addBox(house, PALETTE.wall, -4.2, 5.68, 2, 1.8, extWallH - 5.68, 1); // over Mother
+  // Right of door x 1..7 with R ground + R upper cutouts
+  addBox(house, PALETTE.wall, 1, 0, 2, 2.2, extWallH, 1); // x 1..3.2
+  addBox(house, PALETTE.wall, 5.0, 0, 2, 2, extWallH, 1); // x 5..7
+  addBox(house, PALETTE.wall, 3.2, 0, 2, 1.8, 1, 1); // under R ground
+  addBox(house, PALETTE.wall, 3.2, 2.8, 2, 1.8, 1.55, 1); // between R windows
+  addBox(house, PALETTE.wall, 4.8, 4.35, 2, 0.2, 1.35, 1); // R of upper (upper is 1.6 wide)
+  addBox(house, PALETTE.wall, 3.2, 5.7, 2, 1.8, extWallH - 5.7, 1); // over R upper
   addBox(house, PALETTE.wall, -1, 3, 2, 2, 1, 1); // lintel over door
   addBox(house, PALETTE.wall, -1, 4, 2, 2, extWallH - 4, 1); // story above door
-  addBox(house, PALETTE.wallDark, -6, 4, 2, 13, 0.28, 1); // second-floor band (front)
+  // Second-floor stringcourse — sit just outside the wall face (z=3) to avoid z-fight
+  addBox(house, PALETTE.wallDark, -6, 4, 3.02, 13, 0.28, 0.1);
   // Left wall with a kitchen window cutout (opening: y 1..3, z -6.4..-4.2)
   addBox(house, PALETTE.wall, -6, 0, -7, 1, extWallH, 0.6); // south of window
   addBox(house, PALETTE.wall, -6, 0, -4.2, 1, extWallH, 6.2); // north of window
   addBox(house, PALETTE.wall, -6, 0, -6.4, 1, 1, 2.2); // under window
   addBox(house, PALETTE.wall, -6, 3, -6.4, 1, 1, 2.2); // over window
   addBox(house, PALETTE.wall, -6, 4, -6.4, 1, extWallH - 4, 2.2); // above window to roof
-  addBox(house, PALETTE.wall, 6, 0, -7, 1, extWallH, 9);
+  // Right wall with aurora window cutout (opening: y 1..3.1, z -4.15..-2.05)
+  addBox(house, PALETTE.wall, 6, 0, -7, 1, extWallH, 2.85); // south of window
+  addBox(house, PALETTE.wall, 6, 0, -2.05, 1, extWallH, 4.05); // north of window
+  addBox(house, PALETTE.wall, 6, 0, -4.15, 1, 1, 2.1); // under window
+  addBox(house, PALETTE.wall, 6, 3.1, -4.15, 1, extWallH - 3.1, 2.1); // over window
 
-  // Window frames + glass + curtains
+  // Window frames + glass — open frames (not a solid trim slab) so glass doesn't z-fight
   function windowUnit(x, y, z, w, h, axis = "x") {
+    const t = 0.12;
     if (axis === "x") {
-      addBox(house, PALETTE.trim, x - 0.05, y - 0.1, z, 0.15, h + 0.2, w + 0.2);
-      addBox(house, PALETTE.window, x, y, z + 0.05, 0.12, h, w, {
+      addBox(house, PALETTE.trim, x - 0.02, y - t, z - 0.05, t + 0.04, t, w + 0.1); // sill
+      addBox(house, PALETTE.trim, x - 0.02, y + h, z - 0.05, t + 0.04, t, w + 0.1); // header
+      addBox(house, PALETTE.trim, x - 0.02, y, z - 0.05, t + 0.04, h, t); // jamb near
+      addBox(house, PALETTE.trim, x - 0.02, y, z + w - t + 0.05, t + 0.04, h, t); // jamb far
+      addBox(house, PALETTE.window, x, y, z + 0.05, 0.1, h, w - 0.1, {
         emissive: 0x226655,
         emissiveIntensity: 0.35,
         noShadow: true,
@@ -82,8 +103,12 @@ export function buildWorld(scene) {
       addBox(house, PALETTE.curtain, x + 0.08, y, z + 0.1, 0.08, h, w * 0.35, { noShadow: true });
       addBox(house, PALETTE.curtain, x + 0.08, y, z + w * 0.65, 0.08, h, w * 0.35, { noShadow: true });
     } else {
-      addBox(house, PALETTE.trim, x, y - 0.1, z - 0.05, w + 0.2, h + 0.2, 0.15);
-      addBox(house, PALETTE.window, x + 0.05, y, z, w, h, 0.12, {
+      // z = exterior wall face; frame + glass build outward (+z)
+      addBox(house, PALETTE.trim, x - 0.08, y - t, z, w + 0.16, t, t); // sill
+      addBox(house, PALETTE.trim, x - 0.08, y + h, z, w + 0.16, t, t); // header
+      addBox(house, PALETTE.trim, x - 0.08, y, z, t, h, t); // left jamb
+      addBox(house, PALETTE.trim, x + w - t + 0.08, y, z, t, h, t); // right jamb
+      addBox(house, PALETTE.window, x, y, z + 0.04, w, h, 0.07, {
         emissive: 0x224466,
         emissiveIntensity: 0.25,
         noShadow: true,
@@ -144,17 +169,17 @@ export function buildWorld(scene) {
   interactables.push(kitchenWindowApproach);
   refs.kitchenWindowApproach = kitchenWindowApproach;
 
-  // Front windows on the exterior face (z≈3) — ground + upper story
-  windowUnit(-4.2, 1, 2.95, 1.8, 1.8, "z");
-  windowUnit(3.2, 1, 2.95, 1.8, 1.8, "z");
-  windowUnit(3.2, 4.35, 2.95, 1.6, 1.35, "z");
+  // Front windows on the exterior face (z=3) — ground + upper story
+  windowUnit(-4.2, 1, 3.0, 1.8, 1.8, "z");
+  windowUnit(3.2, 1, 3.0, 1.8, 1.8, "z");
+  windowUnit(3.2, 4.35, 3.0, 1.6, 1.35, "z");
 
   // Mother's upstairs window — real open frame (not a solid white slab)
-  addBox(house, PALETTE.trim, -4.2, 4.25, 2.9, 1.8, 0.12, 0.15); // sill
-  addBox(house, PALETTE.trim, -4.2, 5.68, 2.9, 1.8, 0.12, 0.15); // header
-  addBox(house, PALETTE.trim, -4.2, 4.37, 2.9, 0.12, 1.31, 0.15); // left jamb
-  addBox(house, PALETTE.trim, -2.52, 4.37, 2.9, 0.12, 1.31, 0.15); // right jamb
-  const motherWindowGlass = addBox(house, PALETTE.window, -4.08, 4.37, 2.95, 1.56, 1.31, 0.1, {
+  addBox(house, PALETTE.trim, -4.2, 4.25, 3.0, 1.8, 0.12, 0.12); // sill
+  addBox(house, PALETTE.trim, -4.2, 5.68, 3.0, 1.8, 0.12, 0.12); // header
+  addBox(house, PALETTE.trim, -4.2, 4.37, 3.0, 0.12, 1.31, 0.12); // left jamb
+  addBox(house, PALETTE.trim, -2.52, 4.37, 3.0, 0.12, 1.31, 0.12); // right jamb
+  const motherWindowGlass = addBox(house, PALETTE.window, -4.08, 4.37, 3.04, 1.56, 1.31, 0.08, {
     emissive: 0x224466,
     emissiveIntensity: 0.25,
     noShadow: true,
@@ -180,9 +205,8 @@ export function buildWorld(scene) {
   house.add(mother);
   refs.mother = mother;
 
-  // Attached garage (right / +X)
+  // Attached garage (right / +X) — house already owns the x≈6 shared wall; don't double it
   addBox(house, PALETTE.floor, 6.25, 0, -3.2, 5.2, 0.22, 5.8, { noShadow: true });
-  addBox(house, PALETTE.wall, 6, 0, -3.8, 0.35, intWallH, 6.4); // shared wall with house
   addBox(house, PALETTE.wall, 11.2, 0, -3.8, 0.35, intWallH + 0.5, 6.4);
   addBox(house, PALETTE.wall, 6.5, 0, -3.8, 5.2, intWallH + 0.5, 0.35);
   addBox(house, PALETTE.wall, 6.5, 0, 2.35, 2.2, intWallH + 0.5, 0.35);
@@ -191,13 +215,13 @@ export function buildWorld(scene) {
   addBox(house, PALETTE.door, 7.35, 0.28, 2.38, 1.7, 2.55, 0.14);
   addBox(house, PALETTE.roof, 6, intWallH + 0.2, -4.2, 5.8, 0.42, 6.8, { noShadow: true });
 
-  // Interior partitions (ground floor only)
+  // Interior partitions (ground floor only) — stop short of exterior faces to avoid z-fight
   addBox(house, PALETTE.wall, -2, 0, -8, 1, intWallH, 6);
   addBox(house, PALETTE.wall, -2, 0, 0, 1, intWallH, 3);
   addBox(house, PALETTE.wall, -2, 3, -2, 1, 1, 2);
   addBox(house, PALETTE.wall, -1, 0, -3, 2, intWallH, 1);
-  addBox(house, PALETTE.wall, 3, 0, -3, 3, intWallH, 1);
-  addBox(house, PALETTE.wall, 1, 3, -3, 2, 1, 1);
+  addBox(house, PALETTE.wall, 3, 0, -3, 2.95, intWallH, 1); // ends before right exterior at x=6
+  addBox(house, PALETTE.wall, 1, 3, -2.98, 2, 1, 0.96); // dining↔living lintel, slightly inset
 
   // Roof + chimney (sits on taller exterior shell)
   addBox(house, PALETTE.roof, -7, extWallH, -9, 15, 0.55, 13, { noShadow: true });
@@ -206,12 +230,12 @@ export function buildWorld(scene) {
   addBox(house, PALETTE.wallDark, 4, extWallH + 0.5, -6, 1.3, 2.2, 1.3);
   addBox(house, 0x333333, 4.25, extWallH + 2.6, -5.75, 0.8, 0.35, 0.8, { noShadow: true });
 
-  // Wall art
-  addBox(house, PALETTE.woodDark, 0.5, 2.2, -7.85, 1.2, 0.9, 0.08);
-  addBox(house, 0xd4e8f0, 0.6, 2.3, -7.8, 1.0, 0.7, 0.06, { noShadow: true });
-  // Picture on living-room side wall (not the entrance)
-  addBox(house, PALETTE.woodDark, 5.85, 2.0, -5.2, 0.08, 0.8, 1.0);
-  addBox(house, 0xf0d080, 5.8, 2.1, -5.1, 0.06, 0.6, 0.8, { noShadow: true });
+  // Wall art (on interior face of back wall at z=-7)
+  addBox(house, PALETTE.woodDark, 0.5, 2.2, -6.98, 1.2, 0.9, 0.08);
+  addBox(house, 0xd4e8f0, 0.6, 2.3, -6.94, 1.0, 0.7, 0.06, { noShadow: true });
+  // Picture on living-room side wall — north of aurora window
+  addBox(house, PALETTE.woodDark, 5.9, 2.0, -1.85, 0.08, 0.7, 0.85);
+  addBox(house, 0xf0d080, 5.86, 2.1, -1.75, 0.06, 0.5, 0.65, { noShadow: true });
 
   // Ceiling lamps
   addBox(house, 0xeeeeaa, 2, 3.6, 0, 0.5, 0.2, 0.5, {
@@ -486,11 +510,14 @@ export function buildWorld(scene) {
   interactables.push(extinguisher);
   refs.extinguisher = extinguisher;
 
-  // Kitchen doorway frame (always visible — reads as a door opening)
-  addBox(house, PALETTE.woodDark, -2.15, 0, -2.15, 0.35, 3.05, 0.2); // south jamb
-  addBox(house, PALETTE.woodDark, -2.15, 0, 0, 0.35, 3.05, 0.2); // north jamb
-  addBox(house, PALETTE.woodDark, -2.2, 2.95, -2.15, 0.45, 0.25, 2.35); // lintel
-  addBox(house, PALETTE.trim, -1.88, 1.2, -2.05, 0.08, 0.15, 0.15, { noShadow: true }); // hinge hint
+  // Kitchen doorway casing — on faces of the opening, not inside the partition (x -2..-1)
+  addBox(house, PALETTE.woodDark, -0.98, 0, -2.1, 0.1, 3.0, 0.14); // dining south
+  addBox(house, PALETTE.woodDark, -0.98, 0, -0.04, 0.1, 3.0, 0.14); // dining north
+  addBox(house, PALETTE.woodDark, -0.98, 2.92, -2.1, 0.1, 0.16, 2.2); // dining lintel
+  addBox(house, PALETTE.woodDark, -2.12, 0, -2.1, 0.1, 3.0, 0.14); // kitchen south
+  addBox(house, PALETTE.woodDark, -2.12, 0, -0.04, 0.1, 3.0, 0.14); // kitchen north
+  addBox(house, PALETTE.woodDark, -2.12, 2.92, -2.1, 0.1, 0.16, 2.2); // kitchen lintel
+  addBox(house, PALETTE.trim, -0.9, 1.2, -1.95, 0.06, 0.12, 0.12, { noShadow: true }); // hinge hint
 
   // Door leaf — hinged at south jamb; starts ajar so "shut" is obvious
   const kitchenDoor = makeDoorLeaf({
@@ -630,20 +657,20 @@ export function buildWorld(scene) {
     noShadow: true,
   });
   addBox(house, PALETTE.rug, 3.2, 0.26, -6.0, 2.4, 0.04, 2.0, { noShadow: true });
-  // Living room TV (against the wall)
-  addBox(house, 0x1a1a1e, 5.55, 0.9, -6.8, 0.2, 1.1, 1.5, { noShadow: true });
-  addBox(house, 0x2a3a55, 5.52, 1.0, -6.7, 0.08, 0.9, 1.3, {
+  // Living room TV — on right wall, clear of sofa back (sofa ends ~z=-6.65)
+  addBox(house, 0x1a1a1e, 5.78, 0.9, -5.55, 0.14, 1.1, 1.2, { noShadow: true });
+  addBox(house, 0x2a3a55, 5.72, 1.0, -5.45, 0.08, 0.9, 1.0, {
     emissive: 0x112233,
     emissiveIntensity: 0.25,
     noShadow: true,
   });
 
-  // Stairs door — Mother's room is upstairs / unused; you can only call to her
-  addBox(house, PALETTE.woodDark, 3.85, 0.28, -7.72, 0.12, 2.55, 0.14);
-  addBox(house, PALETTE.woodDark, 5.15, 0.28, -7.72, 0.12, 2.55, 0.14);
-  addBox(house, PALETTE.woodDark, 3.85, 2.7, -7.72, 1.42, 0.18, 0.14);
-  addBox(house, PALETTE.door, 4.0, 0.28, -7.7, 1.15, 2.4, 0.12);
-  addBox(house, 0xc4a35a, 4.95, 1.4, -7.62, 0.12, 0.12, 0.08, {
+  // Stairs door — on interior face of back wall (z=-7), not inside the slab
+  addBox(house, PALETTE.woodDark, 3.85, 0.28, -6.98, 0.12, 2.55, 0.1);
+  addBox(house, PALETTE.woodDark, 5.15, 0.28, -6.98, 0.12, 2.55, 0.1);
+  addBox(house, PALETTE.woodDark, 3.85, 2.7, -6.98, 1.42, 0.18, 0.1);
+  addBox(house, PALETTE.door, 4.0, 0.28, -6.96, 1.15, 2.4, 0.1);
+  addBox(house, 0xc4a35a, 4.95, 1.4, -6.88, 0.12, 0.12, 0.08, {
     emissive: 0x665522,
     emissiveIntensity: 0.2,
     noShadow: true,
@@ -661,7 +688,12 @@ export function buildWorld(scene) {
   interactables.push(checkMother);
   refs.checkMother = checkMother;
 
-  const auroraView = addBox(house, PALETTE.window, 5.85, 1, -6.4, 0.18, 2.1, 2.4, {
+  // Aurora window — open frame in the cutout (not a solid slab against the wall)
+  addBox(house, 0x1a1a1e, 5.9, 0.95, -4.2, 0.1, 0.1, 2.2); // sill
+  addBox(house, 0x1a1a1e, 5.9, 3.05, -4.2, 0.1, 0.1, 2.2); // header
+  addBox(house, 0x1a1a1e, 5.9, 1.05, -4.2, 0.1, 2.0, 0.1); // jamb S
+  addBox(house, 0x1a1a1e, 5.9, 1.05, -2.2, 0.1, 2.0, 0.1); // jamb N
+  const auroraView = addBox(house, PALETTE.window, 5.92, 1.05, -4.1, 0.08, 2.0, 2.0, {
     name: "auroraWindow",
     userData: { id: "auroraWindow", label: "Point out the aurora borealis" },
     emissive: 0x228866,

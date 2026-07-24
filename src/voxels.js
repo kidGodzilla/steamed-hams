@@ -146,13 +146,13 @@ export function makeDoorLeaf({ width = 1.9, height = 2.85, label = "Door" } = {}
   addBox(g, PALETTE.wood, -0.02, height * 0.52, 0.2, 0.06, height * 0.35, width * 0.35, { noShadow: true });
   // Cross rail
   addBox(g, PALETTE.woodDark, -0.01, height * 0.45, 0.12, t + 0.04, 0.12, width - 0.24, { noShadow: true });
-  // Knob (dining-room side) + back plate
-  addBox(g, 0xc4a35a, t + 0.02, height * 0.48, width - 0.35, 0.1, 0.1, 0.1, {
+  // Knobs proud of each face (not intersecting the slab)
+  addBox(g, 0xc4a35a, t + 0.01, height * 0.48, width - 0.35, 0.12, 0.1, 0.1, {
     emissive: 0x886622,
     emissiveIntensity: 0.35,
     noShadow: true,
   });
-  addBox(g, 0x8a7038, -0.04, height * 0.48, width - 0.35, 0.08, 0.08, 0.08, { noShadow: true });
+  addBox(g, 0x8a7038, -0.1, height * 0.48, width - 0.35, 0.09, 0.08, 0.08, { noShadow: true });
 
   g.userData = { id: "kitchenDoor", label };
   g.name = "kitchenDoor";
