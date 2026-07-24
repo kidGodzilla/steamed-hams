@@ -173,7 +173,7 @@ export function buildWorld(scene) {
   addBox(mother, 0x222222, 0.08, 1.28, -0.28, 0.08, 0.08, 0.05, { noShadow: true });
   addBox(mother, PALETTE.skin, -0.42, 0.85, -0.08, 0.16, 0.45, 0.16, { noShadow: true }); // arm
   addBox(mother, PALETTE.skin, 0.32, 0.85, -0.08, 0.16, 0.45, 0.16, { noShadow: true });
-  mother.visible = true;
+  mother.visible = false; // shown only in the exterior finale
   mother.traverse((o) => {
     if (o.isMesh) o.raycast = () => {};
   });

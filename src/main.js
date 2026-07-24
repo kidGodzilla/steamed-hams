@@ -158,7 +158,7 @@ function startGame() {
     refs.kitchenSash.rotation.y = refs.kitchenSash.userData.ajarRotY ?? -1.25;
   }
   if (refs.apron) refs.apron.visible = true;
-  if (refs.mother) refs.mother.visible = true;
+  if (refs.mother) refs.mother.visible = false;
   if (refs.motherWindowGlass) refs.motherWindowGlass.visible = true;
   refs.chalmers.position.set(0, 0.35, 5.5);
   refs.chalmers.rotation.y = Math.PI;
