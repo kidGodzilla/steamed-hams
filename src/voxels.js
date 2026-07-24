@@ -35,13 +35,19 @@ export const PALETTE = {
   lettuce: 0x5aaa3a,
   cheese: 0xf0c040,
   yellow: 0xffd84d,
-  skin: 0xffcc80,
+  skin: 0xffd90f, // Simpsons yellow
   blue: 0x3a5f9a,
   brown: 0x5c3a1e,
   hair: 0x9a9a9a,
-  chalmersHair: 0x3a2818,
+  chalmersHair: 0xa0a0a8,
   mustache: 0x2a1a10,
   suit: 0x2c3a4a,
+  chalmersJacket: 0x2f4f9a,
+  chalmersShirt: 0xf4f4f8,
+  chalmersTie: 0xc62828,
+  skinnerJacket: 0x3d5fad,
+  skinnerShirt: 0xd8b8e4,
+  skinnerTie: 0xf0b090,
   shirt: 0xf5f0e6,
   red: 0xc0392b,
   green: 0x2d6a4f,
@@ -91,19 +97,40 @@ export function addBox(group, color, x, y, z, sx, sy, sz, opts = {}) {
   return m;
 }
 
-export function makeCharacter({ body, hair, accent, mustache = false } = {}) {
+export function makeCharacter({
+  jacket = PALETTE.chalmersJacket,
+  shirt = PALETTE.chalmersShirt,
+  tie = PALETTE.chalmersTie,
+  hair,
+  mustache = false,
+  balding = false,
+} = {}) {
   const g = new THREE.Group();
-  addBox(g, body, -0.35, 0.7, -0.2, 0.7, 0.9, 0.4);
-  addBox(g, accent || body, -0.25, 0.85, -0.22, 0.5, 0.35, 0.08);
+  // Jacket torso + open front showing shirt / tie
+  addBox(g, jacket, -0.35, 0.7, -0.2, 0.7, 0.9, 0.4);
+  addBox(g, shirt, -0.14, 1.05, -0.24, 0.28, 0.52, 0.08, { noShadow: true });
+  addBox(g, shirt, -0.2, 1.48, -0.25, 0.16, 0.1, 0.08, { noShadow: true }); // collar L
+  addBox(g, shirt, 0.04, 1.48, -0.25, 0.16, 0.1, 0.08, { noShadow: true }); // collar R
+  addBox(g, tie, -0.055, 1.02, -0.28, 0.11, 0.5, 0.06, { noShadow: true });
+  addBox(g, tie, -0.07, 1.44, -0.29, 0.14, 0.1, 0.06, { noShadow: true }); // knot
   addBox(g, PALETTE.skin, -0.28, 1.55, -0.25, 0.56, 0.55, 0.5);
-  addBox(g, hair, -0.32, 1.95, -0.28, 0.64, 0.28, 0.56);
+  if (balding) {
+    // Horseshoe fringe — bald yellow crown, grey around sides + back
+    addBox(g, hair, -0.36, 1.68, -0.2, 0.1, 0.42, 0.4); // left
+    addBox(g, hair, 0.26, 1.68, -0.2, 0.1, 0.42, 0.4); // right
+    addBox(g, hair, -0.3, 1.72, 0.18, 0.6, 0.38, 0.12); // back
+    addBox(g, hair, -0.34, 1.98, 0.02, 0.16, 0.12, 0.26); // rear-left rim
+    addBox(g, hair, 0.18, 1.98, 0.02, 0.16, 0.12, 0.26); // rear-right rim
+  } else {
+    addBox(g, hair, -0.32, 1.95, -0.28, 0.64, 0.28, 0.56);
+  }
   addBox(g, 0x222222, -0.18, 1.75, -0.26, 0.1, 0.1, 0.06, { noShadow: true });
   addBox(g, 0x222222, 0.08, 1.75, -0.26, 0.1, 0.1, 0.06, { noShadow: true });
   if (mustache) {
     addBox(g, PALETTE.mustache, -0.16, 1.62, -0.28, 0.32, 0.1, 0.08, { noShadow: true });
   }
-  addBox(g, body, -0.55, 1.15, -0.12, 0.22, 0.55, 0.22);
-  addBox(g, body, 0.33, 1.15, -0.12, 0.22, 0.55, 0.22);
+  addBox(g, jacket, -0.55, 1.15, -0.12, 0.22, 0.55, 0.22);
+  addBox(g, jacket, 0.33, 1.15, -0.12, 0.22, 0.55, 0.22);
   addBox(g, 0x2a2a2a, -0.32, 0, -0.15, 0.28, 0.7, 0.3);
   addBox(g, 0x2a2a2a, 0.04, 0, -0.15, 0.28, 0.7, 0.3);
   g.userData.isCharacter = true;

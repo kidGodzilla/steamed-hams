@@ -205,15 +205,21 @@ export function buildWorld(scene) {
   house.add(mother);
   refs.mother = mother;
 
-  // Attached garage (right / +X) — house already owns the x≈6 shared wall; don't double it
-  addBox(house, PALETTE.floor, 6.25, 0, -3.2, 5.2, 0.22, 5.8, { noShadow: true });
-  addBox(house, PALETTE.wall, 11.2, 0, -3.8, 0.35, intWallH + 0.5, 6.4);
-  addBox(house, PALETTE.wall, 6.5, 0, -3.8, 5.2, intWallH + 0.5, 0.35);
-  addBox(house, PALETTE.wall, 6.5, 0, 2.35, 2.2, intWallH + 0.5, 0.35);
-  addBox(house, PALETTE.wall, 9.5, 0, 2.35, 2.2, intWallH + 0.5, 0.35);
-  addBox(house, PALETTE.wall, 8.2, 2.85, 2.35, 1.8, 0.35, 0.35); // lintel over garage door
-  addBox(house, PALETTE.door, 7.35, 0.28, 2.38, 1.7, 2.55, 0.14);
-  addBox(house, PALETTE.roof, 6, intWallH + 0.2, -4.2, 5.8, 0.42, 6.8, { noShadow: true });
+  // Attached garage (left / -X, viewer's left from the street) — shared wall is x≈-6
+  addBox(house, PALETTE.floor, -11.45, 0, -3.2, 5.45, 0.22, 5.8, { noShadow: true });
+  addBox(house, PALETTE.wall, -11.55, 0, -3.8, 0.35, intWallH + 0.5, 6.4);
+  addBox(house, PALETTE.wall, -11.7, 0, -3.8, 5.2, intWallH + 0.5, 0.35);
+  // Front: thin jambs + wide grey car-garage door
+  addBox(house, PALETTE.wall, -11.7, 0, 2.35, 0.45, intWallH + 0.5, 0.35); // outer jamb
+  addBox(house, PALETTE.wall, -6.95, 0, 2.35, 0.45, intWallH + 0.5, 0.35); // house-side jamb
+  // Header fills from door top up to the jambs (was a short lintel leaving a hole)
+  addBox(house, PALETTE.wall, -11.7, 2.68, 2.35, 5.2, intWallH + 0.5 - 2.68, 0.35);
+  addBox(house, 0x8a8a92, -11.25, 0.28, 2.38, 4.3, 2.4, 0.14); // door slab
+  for (let i = 0; i < 4; i++) {
+    addBox(house, 0x6e6e76, -11.2, 0.72 + i * 0.52, 2.5, 4.2, 0.07, 0.04, { noShadow: true });
+  }
+  addBox(house, 0x55555c, -9.2, 1.35, 2.52, 0.28, 0.12, 0.06, { noShadow: true }); // handle
+  addBox(house, PALETTE.roof, -11.8, intWallH + 0.2, -4.2, 5.8, 0.42, 6.8, { noShadow: true });
 
   // Interior partitions (ground floor only) — stop short of exterior faces to avoid z-fight
   addBox(house, PALETTE.wall, -2, 0, -8, 1, intWallH, 6);
@@ -226,7 +232,7 @@ export function buildWorld(scene) {
   // Roof + chimney (sits on taller exterior shell)
   addBox(house, PALETTE.roof, -7, extWallH, -9, 15, 0.55, 13, { noShadow: true });
   addBox(house, PALETTE.roof, -5.5, extWallH + 0.45, -8, 12, 0.45, 11, { noShadow: true });
-  addBox(house, PALETTE.roof, 6, intWallH + 0.55, -4.2, 5.8, 0.35, 6.8, { noShadow: true });
+  addBox(house, PALETTE.roof, -11.8, intWallH + 0.55, -4.2, 5.8, 0.35, 6.8, { noShadow: true });
   addBox(house, PALETTE.wallDark, 4, extWallH + 0.5, -6, 1.3, 2.2, 1.3);
   addBox(house, 0x333333, 4.25, extWallH + 2.6, -5.75, 0.8, 0.35, 0.8, { noShadow: true });
 
@@ -789,10 +795,12 @@ export function buildWorld(scene) {
 
   // Chalmers
   const chalmers = makeCharacter({
-    body: PALETTE.suit,
+    jacket: PALETTE.chalmersJacket,
+    shirt: PALETTE.chalmersShirt,
+    tie: PALETTE.chalmersTie,
     hair: PALETTE.chalmersHair,
-    accent: PALETTE.shirt,
     mustache: true,
+    balding: true,
   });
   chalmers.position.set(0, 0.35, 5.5);
   chalmers.rotation.y = Math.PI;
@@ -803,9 +811,10 @@ export function buildWorld(scene) {
 
   // Skinner body — only shown for the outdoor farewell tableau (gameplay is 1st-person)
   const skinner = makeCharacter({
-    body: 0x4a6aaa,
-    hair: 0xc8c8c8,
-    accent: 0xe8d0e0,
+    jacket: PALETTE.skinnerJacket,
+    shirt: PALETTE.skinnerShirt,
+    tie: PALETTE.skinnerTie,
+    hair: 0x8a8a92,
   });
   skinner.name = "skinner";
   skinner.visible = false;
