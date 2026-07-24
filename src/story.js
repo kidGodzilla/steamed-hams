@@ -126,8 +126,18 @@ export function createStory(refs, lights, ui, player) {
 
   function seatChalmers() {
     refs.chalmers.position.set(2.8, 0, -1.4);
-    refs.chalmers.rotation.y = Math.PI; // face +Z toward the table
+    // Face Skinner's seat across the table (north chair)
+    faceChalmersToward(1.4, 1.85);
     if (refs.wineService) refs.wineService.visible = true;
+  }
+
+  /** Seat the player opposite Chalmers for the dinner interrogation. */
+  function seatPlayerForDinner() {
+    if (!player) return;
+    player.state.pos.set(1.4, 1.7, 1.85);
+    player.state.lookAnim = null;
+    faceChalmersToward(player.state.pos.x, player.state.pos.z);
+    player.faceToward(refs.chalmers.position, { headY: 1.75, duration: 0.35 });
   }
 
   function chalmersAtKitchen() {
@@ -207,6 +217,10 @@ export function createStory(refs, lights, ui, player) {
 
   function lookAtChalmers() {
     if (!player) return;
+    // During dinner talk, keep Chalmers squared up to the player
+    if (state.stage === "talk") {
+      faceChalmersToward(player.state.pos.x, player.state.pos.z);
+    }
     player.faceToward(refs.chalmers.position, { headY: 1.75, duration: 0.45 });
   }
 
@@ -579,7 +593,8 @@ export function createStory(refs, lights, ui, player) {
   }
 
   function beginInterrogation() {
-    lookAtChalmers();
+    seatChalmers();
+    seatPlayerForDinner();
     ui.openDialogue({
       speaker: "Chalmers",
       line: "I thought we were having steamed clams.",
