@@ -25,6 +25,16 @@ export function buildWorld(scene) {
     if (Math.abs(x) < 2.5) continue;
     addBox(scene, PALETTE.hedge, x, 0, 14, 1.8, 1.3, 0.7, { noShadow: true });
   }
+  // Yard props
+  addBox(scene, 0x3a3a3e, 2.6, 0, 8.2, 0.12, 1.1, 0.12, { noShadow: true });
+  addBox(scene, PALETTE.red, 2.4, 1.0, 8.05, 0.45, 0.35, 0.35);
+  addBox(scene, 0x222222, 2.45, 1.3, 8.1, 0.5, 0.06, 0.4, { noShadow: true });
+  addBox(scene, PALETTE.dirt, -5.2, -0.95, 4.2, 1.6, 0.2, 0.9, { noShadow: true });
+  addBox(scene, 0xc45c6a, -5.0, 0.05, 4.35, 0.35, 0.35, 0.35, { noShadow: true });
+  addBox(scene, 0xe8b84a, -4.5, 0.05, 4.4, 0.3, 0.4, 0.3, { noShadow: true });
+  addBox(scene, PALETTE.dirt, 3.8, -0.95, 4.2, 1.6, 0.2, 0.9, { noShadow: true });
+  addBox(scene, 0x6aaa4a, 4.0, 0.05, 4.35, 0.35, 0.4, 0.35, { noShadow: true });
+  addBox(scene, 0xc45c6a, 4.5, 0.05, 4.4, 0.28, 0.35, 0.28, { noShadow: true });
 
   const house = new THREE.Group();
   house.name = "house";
@@ -151,13 +161,18 @@ export function buildWorld(scene) {
   });
   refs.motherWindowGlass = motherWindowGlass;
 
-  // Mother — in the upstairs opening (visible from the yard when glass is removed)
+  // Mother — fuller upstairs figure (visible from the yard when glass is removed)
   const mother = new THREE.Group();
   mother.name = "mother";
-  mother.position.set(-3.3, 4.4, 2.55);
-  addBox(mother, 0x2a2430, -0.22, 0, -0.1, 0.55, 1.05, 0.22, { noShadow: true });
-  addBox(mother, PALETTE.skin, -0.14, 1.0, -0.12, 0.38, 0.35, 0.28, { noShadow: true });
-  addBox(mother, 0x6a5a4a, -0.16, 1.28, -0.14, 0.42, 0.2, 0.32, { noShadow: true });
+  mother.position.set(-3.3, 4.35, 2.55);
+  addBox(mother, 0x4a3a55, -0.28, 0, -0.12, 0.65, 1.15, 0.28, { noShadow: true }); // dress
+  addBox(mother, 0x3a2a45, -0.22, 0.55, -0.14, 0.5, 0.35, 0.08, { noShadow: true }); // apron panel
+  addBox(mother, PALETTE.skin, -0.16, 1.1, -0.14, 0.4, 0.38, 0.3, { noShadow: true });
+  addBox(mother, 0x6a5a4a, -0.2, 1.4, -0.16, 0.48, 0.22, 0.34, { noShadow: true }); // hair
+  addBox(mother, 0x222222, -0.08, 1.28, -0.28, 0.08, 0.08, 0.05, { noShadow: true });
+  addBox(mother, 0x222222, 0.08, 1.28, -0.28, 0.08, 0.08, 0.05, { noShadow: true });
+  addBox(mother, PALETTE.skin, -0.42, 0.85, -0.08, 0.16, 0.45, 0.16, { noShadow: true }); // arm
+  addBox(mother, PALETTE.skin, 0.32, 0.85, -0.08, 0.16, 0.45, 0.16, { noShadow: true });
   mother.visible = true;
   mother.traverse((o) => {
     if (o.isMesh) o.raycast = () => {};
@@ -245,11 +260,18 @@ export function buildWorld(scene) {
   );
 
   // —— Kitchen ——
-  // Clear lane along the left wall / window; appliances sit toward the fridge
+  // Clear lane along the left wall / window; appliances along the back counter
   addBox(house, PALETTE.kitchen, -5.8, 0.25, -7.6, 3.5, 0.05, 1.4, { noShadow: true });
   addBox(house, PALETTE.counter, -4.35, 0.25, -7.55, 2.15, 1.05, 1.0);
   addBox(house, PALETTE.wood, -4.2, 2.3, -7.55, 1.9, 1.2, 0.7); // cabinets
-  addBox(house, PALETTE.fridge, -2.9, 0.25, -7.6, 0.85, 2.4, 0.9);
+  // Sink + dish rack on the counter
+  addBox(house, PALETTE.counter, -3.35, 0.25, -7.55, 0.7, 1.0, 1.0);
+  addBox(house, 0x8a9aaa, -3.2, 1.2, -7.35, 0.45, 0.12, 0.45, { noShadow: true });
+  addBox(house, 0x666670, -3.05, 1.32, -7.2, 0.08, 0.35, 0.08, { noShadow: true }); // faucet
+  addBox(house, 0xaaaaaa, -3.35, 1.25, -7.55, 0.35, 0.25, 0.2, { noShadow: true }); // dish rack
+  // Canisters on counter
+  addBox(house, 0xf5f0e6, -4.5, 1.35, -7.0, 0.2, 0.28, 0.2, { noShadow: true });
+  addBox(house, 0xe8d8c0, -4.2, 1.35, -7.0, 0.18, 0.22, 0.18, { noShadow: true });
 
   // Apron on a hook — Skinner "takes it off" before the window escape
   const apron = new THREE.Group();
@@ -260,17 +282,23 @@ export function buildWorld(scene) {
   house.add(apron);
   refs.apron = apron;
 
-  // Oven — white exterior, dark cavity (away from the window approach)
-  addBox(house, PALETTE.stoveWhite, -5.0, 0.25, -7.4, 1.7, 1.85, 1.25);
+  // Oven — white shell with open front so the cavity reads black when the door drops
+  addBox(house, PALETTE.stoveWhite, -5.0, 0.25, -7.4, 0.12, 1.85, 1.25); // left wall
+  addBox(house, PALETTE.stoveWhite, -3.42, 0.25, -7.4, 0.12, 1.85, 1.25); // right wall
+  addBox(house, PALETTE.stoveWhite, -4.88, 0.25, -7.4, 1.46, 0.16, 1.25); // floor
+  addBox(house, PALETTE.stoveWhite, -4.88, 1.94, -7.4, 1.46, 0.16, 1.25); // ceiling
+  addBox(house, PALETTE.stoveWhite, -4.88, 0.25, -7.4, 1.46, 1.85, 0.14); // back wall
   addBox(house, PALETTE.stove, -4.95, 2.05, -7.35, 1.6, 0.14, 1.15, { noShadow: true }); // cooktop
   // Burner discs
   addBox(house, 0x222226, -4.75, 2.16, -7.1, 0.32, 0.04, 0.32, { noShadow: true });
   addBox(house, 0x222226, -4.2, 2.16, -7.1, 0.32, 0.04, 0.32, { noShadow: true });
   addBox(house, 0x222226, -4.75, 2.16, -6.6, 0.32, 0.04, 0.32, { noShadow: true });
   addBox(house, 0x222226, -4.2, 2.16, -6.6, 0.32, 0.04, 0.32, { noShadow: true });
-  // Dark cavity recess (visible when door drops open)
-  addBox(house, PALETTE.ovenCavity, -4.85, 0.4, -7.25, 1.4, 1.35, 1.0, { noShadow: true });
-  addBox(house, 0x050506, -4.75, 0.5, -7.15, 1.2, 1.15, 0.85, { noShadow: true });
+  // Black cavity (unlit so kitchen lights don't wash it out)
+  const ovenCavity = addBox(house, 0x000000, -4.88, 0.41, -7.26, 1.46, 1.53, 1.05, {
+    noShadow: true,
+  });
+  ovenCavity.material = new THREE.MeshBasicMaterial({ color: 0x000000 });
 
   // Bottom-hinged white oven door on the FRONT face
   const ovenDoor = new THREE.Group();
@@ -447,11 +475,14 @@ export function buildWorld(scene) {
   refs.chimneySmoke = chimneySmoke;
   refs.chimneyPuffs = chimneyPuffs;
 
-  const extinguisher = addBox(house, PALETTE.red, -2.75, 0.25, -7.05, 0.35, 1.15, 0.35, {
-    name: "extinguisher",
-    userData: { id: "extinguisher", label: "Grab fire extinguisher" },
-  });
-  addBox(house, 0xdddddd, -2.7, 1.3, -7.0, 0.25, 0.2, 0.25);
+  // Fire extinguisher — back corner by the counter, clear of the cabinets (fail path)
+  const extinguisher = new THREE.Group();
+  extinguisher.name = "extinguisher";
+  extinguisher.position.set(-2.35, 0.25, -6.4);
+  addBox(extinguisher, PALETTE.red, -0.14, 0, -0.14, 0.28, 1.05, 0.28);
+  addBox(extinguisher, 0xdddddd, -0.1, 0.95, -0.1, 0.2, 0.18, 0.2, { noShadow: true });
+  extinguisher.userData = { id: "extinguisher", label: "Grab fire extinguisher" };
+  house.add(extinguisher);
   interactables.push(extinguisher);
   refs.extinguisher = extinguisher;
 
@@ -537,7 +568,6 @@ export function buildWorld(scene) {
     emissiveIntensity: 0.7,
     noShadow: true,
   });
-
   const wineService = new THREE.Group();
   wineService.name = "wineService";
   wineService.position.set(2.05, 0.43, 0.42);
@@ -581,20 +611,30 @@ export function buildWorld(scene) {
   refs.hamOnTable2 = hamOnTable2;
 
   const chair1 = makeChair();
-  chair1.position.set(1.4, 0, 1.5); // north of table, face -Z
+  chair1.position.set(1.4, 0, 1.85); // north of table — face toward it (-Z)
   house.add(chair1);
   const chair2 = makeChair();
-  chair2.position.set(2.8, 0, -1.3); // south of table, face +Z
+  chair2.position.set(2.8, 0, -1.55); // south of table — face toward it (+Z)
   chair2.rotation.y = Math.PI;
   house.add(chair2);
 
   // Living room
   addBox(house, PALETTE.blue, 3.5, 0.25, -6.3, 2.3, 0.65, 1.15);
   addBox(house, PALETTE.blue, 3.5, 0.9, -7.05, 2.3, 0.8, 0.4);
+  addBox(house, 0x2a4a7a, 3.7, 0.95, -6.95, 0.5, 0.45, 0.25, { noShadow: true }); // cushion
+  addBox(house, 0x2a4a7a, 4.6, 0.95, -6.95, 0.5, 0.45, 0.25, { noShadow: true });
   addBox(house, PALETTE.wood, 5.1, 0.25, -5.0, 0.7, 0.9, 0.7); // side table
   addBox(house, PALETTE.yellow, 5.25, 1.2, -4.85, 0.25, 0.35, 0.25, {
     emissive: 0xffcc66,
     emissiveIntensity: 0.4,
+    noShadow: true,
+  });
+  addBox(house, PALETTE.rug, 3.2, 0.26, -6.0, 2.4, 0.04, 2.0, { noShadow: true });
+  // Living room TV (against the wall)
+  addBox(house, 0x1a1a1e, 5.55, 0.9, -6.8, 0.2, 1.1, 1.5, { noShadow: true });
+  addBox(house, 0x2a3a55, 5.52, 1.0, -6.7, 0.08, 0.9, 1.3, {
+    emissive: 0x112233,
+    emissiveIntensity: 0.25,
     noShadow: true,
   });
 
@@ -654,17 +694,35 @@ export function buildWorld(scene) {
   addBox(krusty, PALETTE.dirt, -2.8, -0.05, -2.3, 5.6, 0.12, 4.6, { noShadow: true }); // lot pad
   addBox(krusty, PALETTE.krustyRed, -2.5, 0, -2, 5, 4.5, 4);
   addBox(krusty, PALETTE.krustyYellow, -2.8, 4.5, -2.3, 5.6, 0.55, 4.6, { noShadow: true });
-  addBox(krusty, PALETTE.krustyYellow, -1.2, 5.2, 2.15, 2.4, 2.2, 0.35); // sign board
+  // Drive-thru window + door + trim stripe
+  addBox(krusty, PALETTE.window, -0.4, 1.4, 1.95, 1.1, 1.0, 0.12, {
+    emissive: 0xffcc66,
+    emissiveIntensity: 0.35,
+    noShadow: true,
+  });
+  addBox(krusty, 0x333333, 1.2, 0.2, 1.95, 0.9, 2.2, 0.1, { noShadow: true });
+  addBox(krusty, PALETTE.krustyYellow, -2.5, 3.6, 1.95, 5.0, 0.25, 0.08, { noShadow: true });
+  // Sign board + clown face
+  addBox(krusty, PALETTE.krustyYellow, -1.2, 5.2, 2.15, 2.4, 2.2, 0.35);
   addBox(krusty, PALETTE.krustyRed, -0.9, 6.8, 2.2, 1.8, 0.45, 0.25, { noShadow: true });
-  addBox(krusty, 0xffffff, -0.5, 5.6, 2.22, 0.55, 0.55, 0.12, { noShadow: true }); // clown face
+  addBox(krusty, 0xffffff, -0.5, 5.6, 2.22, 0.55, 0.55, 0.12, { noShadow: true });
+  addBox(krusty, 0xff88aa, -0.38, 5.55, 2.25, 0.18, 0.12, 0.06, { noShadow: true }); // nose
   addBox(krusty, 0x222222, -0.35, 5.75, 2.24, 0.12, 0.12, 0.06, { noShadow: true });
   addBox(krusty, 0x222222, -0.05, 5.75, 2.24, 0.12, 0.12, 0.06, { noShadow: true });
-  addBox(krusty, PALETTE.krustyRed, -0.25, 5.45, 2.24, 0.45, 0.12, 0.06, { noShadow: true }); // smile
+  addBox(krusty, PALETTE.krustyRed, -0.25, 5.45, 2.24, 0.45, 0.12, 0.06, { noShadow: true });
+  addBox(krusty, 0x2266aa, -0.65, 6.35, 2.24, 0.85, 0.2, 0.08, { noShadow: true }); // hair tuft
   addBox(krusty, PALETTE.krustyYellow, -2.2, 1.2, 2.05, 0.35, 0.35, 0.2, {
     emissive: 0xffaa22,
     emissiveIntensity: 0.55,
     noShadow: true,
   });
+  // Dumpster + menu board
+  addBox(krusty, 0x3a5a3a, 2.8, 0, -1.5, 1.4, 1.3, 1.0, { noShadow: true });
+  addBox(krusty, 0x2a4a2a, 2.85, 1.2, -1.4, 1.3, 0.15, 0.8, { noShadow: true });
+  addBox(krusty, 0xeeeeee, -2.0, 1.5, 2.05, 0.7, 1.2, 0.08, { noShadow: true });
+  addBox(krusty, 0x333333, -1.9, 2.3, 2.08, 0.5, 0.12, 0.04, { noShadow: true });
+  addBox(krusty, 0x333333, -1.9, 2.0, 2.08, 0.5, 0.12, 0.04, { noShadow: true });
+  addBox(krusty, 0x333333, -1.9, 1.7, 2.08, 0.5, 0.12, 0.04, { noShadow: true });
   scene.add(krusty);
   refs.krusty = krusty;
 

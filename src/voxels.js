@@ -24,7 +24,7 @@ export const PALETTE = {
   fridge: 0xe8e8ec,
   stove: 0x3a3a3e,
   stoveWhite: 0xf4f4f6,
-  ovenCavity: 0x0a0a0c,
+  ovenCavity: 0x000000,
   fire: 0xff6a20,
   fireCore: 0xffe066,
   smoke: 0x6a6a6a,
@@ -91,7 +91,7 @@ export function addBox(group, color, x, y, z, sx, sy, sz, opts = {}) {
   return m;
 }
 
-export function makeCharacter({ body, hair, accent, mustache = false }) {
+export function makeCharacter({ body, hair, accent, mustache = false } = {}) {
   const g = new THREE.Group();
   addBox(g, body, -0.35, 0.7, -0.2, 0.7, 0.9, 0.4);
   addBox(g, accent || body, -0.25, 0.85, -0.22, 0.5, 0.35, 0.08);
@@ -122,12 +122,13 @@ export function makeHam() {
 
 export function makeChair() {
   const g = new THREE.Group();
-  addBox(g, PALETTE.wood, -0.28, 0.45, -0.28, 0.56, 0.1, 0.56);
-  addBox(g, PALETTE.woodDark, -0.28, 0, -0.28, 0.1, 0.45, 0.1);
-  addBox(g, PALETTE.woodDark, 0.18, 0, -0.28, 0.1, 0.45, 0.1);
-  addBox(g, PALETTE.woodDark, -0.28, 0, 0.18, 0.1, 0.45, 0.1);
-  addBox(g, PALETTE.woodDark, 0.18, 0, 0.18, 0.1, 0.45, 0.1);
-  addBox(g, PALETTE.wood, -0.28, 0.55, 0.18, 0.56, 0.7, 0.1);
+  // Seat; tall backrest on +Z so the open side / sitter faces local -Z
+  addBox(g, PALETTE.wood, -0.3, 0.45, -0.3, 0.6, 0.1, 0.6);
+  addBox(g, PALETTE.woodDark, -0.3, 0, -0.3, 0.1, 0.45, 0.1);
+  addBox(g, PALETTE.woodDark, 0.2, 0, -0.3, 0.1, 0.45, 0.1);
+  addBox(g, PALETTE.woodDark, -0.3, 0, 0.2, 0.1, 0.45, 0.1);
+  addBox(g, PALETTE.woodDark, 0.2, 0, 0.2, 0.1, 0.45, 0.1);
+  addBox(g, PALETTE.wood, -0.3, 0.55, 0.3, 0.6, 0.85, 0.12);
   return g;
 }
 

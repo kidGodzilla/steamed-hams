@@ -124,8 +124,8 @@ export function createStory(refs, lights, ui, player) {
   }
 
   function seatChalmers() {
-    refs.chalmers.position.set(2.8, 0, -1.15);
-    refs.chalmers.rotation.y = Math.PI;
+    refs.chalmers.position.set(2.8, 0, -1.4);
+    refs.chalmers.rotation.y = Math.PI; // face +Z toward the table
     if (refs.wineService) refs.wineService.visible = true;
   }
 
@@ -435,21 +435,34 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Skinner",
       line: "GASP! Oh egads! My roast is ruined!",
+      choices: [
+        {
+          text: "But what if I purchased fast food and disguised it as my own cooking?",
+          next: () => hatchEscapePlan(),
+        },
+        {
+          text: "Put out the fire with the extinguisher.",
+          next: () =>
+            fail("You put out the roast — and any hope of an unforgettable luncheon."),
+        },
+      ],
+    });
+  }
+
+  function hatchEscapePlan() {
+    closeOven();
+    lookAtKrusty();
+    ui.openDialogue({
+      speaker: "Skinner",
+      line: "But what if... I were to purchase fast food and disguise it as my own cooking?",
       continue: () => {
-        closeOven();
-        lookAtKrusty();
         ui.openDialogue({
           speaker: "Skinner",
-          line: "But what if... I were to purchase fast food and disguise it as my own cooking?",
+          line: "Oh ho ho ho ho ho! Delightfully devilish, Seymour.",
           continue: () => {
-            ui.openDialogue({
-              speaker: "Skinner",
-              line: "Oh ho ho ho ho ho! Delightfully devilish, Seymour.",
-              continue: () => {
-                setStage("escape_window");
-                ui.closeDialogue();
-              },
-            });
+            setStage("escape_window");
+            ui.closeDialogue();
+            ui.toast("Climb out the window — or put out the fire, if you must.");
           },
         });
       },
