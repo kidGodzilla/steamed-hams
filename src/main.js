@@ -4,6 +4,7 @@ import { buildWorld, updateWorld } from "./world.js";
 import { createPlayer } from "./player.js";
 import { createStory } from "./story.js";
 import { playDoorbell } from "./audio.js";
+import { playDialogCue, stopDialogAudio, prepareDialogAudio } from "./dialogAudio.js";
 
 const canvas = document.getElementById("c");
 const titleScreen = document.getElementById("title-screen");
@@ -67,21 +68,33 @@ const ui = {
     lineEl.textContent = opts.line;
     choicesEl.innerHTML = "";
     continueBtn.classList.add("hidden");
+    continueBtn.onclick = null;
+
+    if (opts.audio) playDialogCue(opts.audio);
+    else stopDialogAudio();
 
     if (opts.choices?.length) {
       for (const c of opts.choices) {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.textContent = c.text;
-        btn.addEventListener("click", () => c.next());
+        btn.addEventListener("click", () => {
+          for (const b of choicesEl.querySelectorAll("button")) b.disabled = true;
+          stopDialogAudio();
+          c.next();
+        });
         choicesEl.appendChild(btn);
       }
     } else {
       continueBtn.classList.remove("hidden");
-      continueBtn.onclick = () => opts.continue?.();
+      continueBtn.onclick = () => {
+        stopDialogAudio();
+        opts.continue?.();
+      };
     }
   },
   closeDialogue() {
+    stopDialogAudio();
     dialogueEl.classList.add("hidden");
     document.body.classList.remove("ui-mode");
     player.state.canMove = true;
@@ -91,6 +104,7 @@ const ui = {
     }
   },
   showEnd(title, body, opts = {}) {
+    stopDialogAudio();
     ui.clearToast();
     document.exitPointerLock?.();
     document.body.classList.add("ui-mode");
@@ -105,6 +119,7 @@ const ui = {
 };
 
 function startGame() {
+  prepareDialogAudio();
   playDoorbell();
   titleScreen.classList.add("hidden");
   endScreen.classList.add("hidden");
@@ -183,6 +198,18 @@ window.addEventListener("keydown", (e) => {
   if (e.code === "KeyE" && running && story && focused && player.state.canMove) {
     const id = focused.userData?.id;
     if (id) story.interact(id);
+  }
+
+  // Enter advances single-continue dialogue (not multi-choice)
+  if (
+    (e.code === "Enter" || e.code === "NumpadEnter") &&
+    running &&
+    !dialogueEl.classList.contains("hidden") &&
+    !continueBtn.classList.contains("hidden") &&
+    !continueBtn.disabled
+  ) {
+    e.preventDefault();
+    continueBtn.click();
   }
 });
 

@@ -333,6 +333,7 @@ export function createStory(refs, lights, ui, player) {
         ui.openDialogue({
           speaker: "Skinner",
           line: "Superintendent, I hope you're ready for mouth-watering hamburgers.",
+          audio: "skinner_ready_hamburgers",
           continue: () => {
             ui.closeDialogue();
             ui.toast("Serve them at the dining table.");
@@ -382,14 +383,17 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "Well, Seymour, I made it... Despite your directions.",
+      audio: "chalmers_arrival",
       continue: () => {
         ui.openDialogue({
           speaker: "Skinner",
           line: "Ahhh, Superintendent Chalmers! Welcome! I hope you're prepared for an unforgettable luncheon.",
+          audio: "skinner_welcome",
           continue: () => {
             ui.openDialogue({
               speaker: "Chalmers",
               line: "Nyeh...",
+              audio: "chalmers_nyeh",
               continue: () => finishArrival(),
             });
           },
@@ -435,6 +439,7 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Skinner",
       line: "GASP! Oh egads! My roast is ruined!",
+      audio: "skinner_roast_ruined",
       choices: [
         {
           text: "But what if I purchased fast food and disguised it as my own cooking?",
@@ -455,10 +460,12 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Skinner",
       line: "But what if... I were to purchase fast food and disguise it as my own cooking?",
+      audio: "skinner_fast_food_plan",
       continue: () => {
         ui.openDialogue({
           speaker: "Skinner",
           line: "Oh ho ho ho ho ho! Delightfully devilish, Seymour.",
+          audio: "skinner_devilish",
           continue: () => {
             setStage("escape_window");
             ui.closeDialogue();
@@ -481,6 +488,7 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "SEYMOUR!!!!!!!",
+      audio: "chalmers_seymour",
       continue: () => {
         ui.openDialogue({
           speaker: "Chalmers",
@@ -488,7 +496,14 @@ export function createStory(refs, lights, ui, player) {
           choices: [
             {
               text: "Just stretching my calves on the windowsill. Isometric exercise! Care to join me?",
-              next: () => smokeQuestion(),
+              next: () => {
+                ui.openDialogue({
+                  speaker: "Skinner",
+                  line: "Just stretching my calves on the windowsill. Isometric exercise! Care to join me?",
+                  audio: "skinner_calves",
+                  continue: () => smokeQuestion(),
+                });
+              },
             },
             {
               text: "Escaping to buy hamburgers. The roast is ruined.",
@@ -505,21 +520,29 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "Why is there smoke coming out of your oven, Seymour?",
+      audio: "chalmers_smoke_oven",
       choices: [
         {
           text: "That isn't smoke. It's steam from the steamed clams we're having!",
           next: () => {
             lookAtChalmers();
             ui.openDialogue({
-              speaker: "Chalmers",
-              line: "Uh-huh.",
+              speaker: "Skinner",
+              line: "That isn't smoke. It's steam from the steamed clams we're having!",
+              audio: "skinner_steamed_clams_steam",
               continue: () => {
-                seatChalmers();
-                hideKitchenDoor();
                 ui.openDialogue({
-                  speaker: "Skinner",
-                  line: "Whew...",
-                  continue: () => finishWindowEscape(),
+                  speaker: "Chalmers",
+                  line: "Uh-huh.",
+                  continue: () => {
+                    seatChalmers();
+                    hideKitchenDoor();
+                    ui.openDialogue({
+                      speaker: "Skinner",
+                      line: "Whew...",
+                      continue: () => finishWindowEscape(),
+                    });
+                  },
                 });
               },
             });
@@ -559,14 +582,23 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "I thought we were having steamed clams.",
+      audio: "chalmers_steamed_clams",
       choices: [
         {
           text: "D'oh no, I said Steamed Hams! That's what I call hamburgers.",
           next: () => {
             ui.openDialogue({
-              speaker: "Chalmers",
-              line: "You call hamburgers 'steamed hams'?",
-              continue: () => regionBit(),
+              speaker: "Skinner",
+              line: "D'oh no, I said Steamed Hams! That's what I call hamburgers.",
+              audio: "skinner_said_steamed_hams",
+              continue: () => {
+                ui.openDialogue({
+                  speaker: "Chalmers",
+                  line: "You call hamburgers 'steamed hams'?",
+                  audio: "chalmers_call_hamburgers",
+                  continue: () => regionBit(),
+                });
+              },
             });
           },
         },
@@ -582,14 +614,23 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Skinner",
       line: "Yes! It's a regional dialect.",
+      audio: "skinner_regional",
       continue: () => {
         ui.openDialogue({
           speaker: "Chalmers",
           line: "Uh-huh. What region?",
+          audio: "chalmers_what_region",
           choices: [
             {
               text: "Uhhh— upstate New York?",
-              next: () => albanyBit(),
+              next: () => {
+                ui.openDialogue({
+                  speaker: "Skinner",
+                  line: "Uhhh— upstate New York?",
+                  audio: "skinner_upstate",
+                  continue: () => albanyBit(),
+                });
+              },
             },
             {
               text: "The steamed-ham region of... Canada?",
@@ -612,10 +653,18 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "Really. Well, I'm from Utica and I've never heard anyone use the phrase 'steamed hams'.",
+      audio: "chalmers_utica",
       choices: [
         {
           text: "Oh, not in Utica, no. It's an Albany expression.",
-          next: () => krustyBit(),
+          next: () => {
+            ui.openDialogue({
+              speaker: "Skinner",
+              line: "Oh, not in Utica, no. It's an Albany expression.",
+              audio: "skinner_albany",
+              continue: () => krustyBit(),
+            });
+          },
         },
         {
           text: "Perhaps Utica is behind the times, sir.",
@@ -629,22 +678,33 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "I see.",
+      audio: "chalmers_i_see",
       continue: () => {
         ui.openDialogue({
           speaker: "Chalmers",
           line: "You know, these hamburgers are quite similar to the ones they have at Krusty Burger.",
+          audio: "chalmers_krusty_similar",
           choices: [
             {
               text: "Oh ho ho ho no! Patented Skinner Burgers; Old family recipe!",
               next: () => {
                 ui.openDialogue({
-                  speaker: "Chalmers",
-                  line: "For steamed hams?",
+                  speaker: "Skinner",
+                  line: "Oh ho ho ho no! Patented Skinner Burgers; Old family recipe!",
+                  audio: "skinner_patented",
                   continue: () => {
                     ui.openDialogue({
-                      speaker: "Skinner",
-                      line: "Yes.",
-                      continue: () => grilledBit(),
+                      speaker: "Chalmers",
+                      line: "For steamed hams?",
+                      audio: "chalmers_for_steamed_hams",
+                      continue: () => {
+                        ui.openDialogue({
+                          speaker: "Skinner",
+                          line: "Yes.",
+                          audio: "skinner_yes",
+                          continue: () => grilledBit(),
+                        });
+                      },
                     });
                   },
                 });
@@ -664,13 +724,16 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "Yes, and you call them steamed hams, despite the fact that they are obviously grilled.",
+      audio: "chalmers_obviously_grilled",
       choices: [
         {
           text: "Y— You know th— One thing I sh— 'Scuse me for one second...",
+          audio: "skinner_excuse_me",
           next: () => {
             ui.openDialogue({
               speaker: "Chalmers",
               line: "Of course.",
+              audio: "chalmers_of_course",
               continue: () => {
                 shutKitchenDoor();
                 approachKitchenDoor();
@@ -697,22 +760,26 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Skinner",
       line: "Well, that was wonderful. A good time was had by all. I'm pooped.",
+      audio: "skinner_pooped",
       continue: () => {
         chalmersSeesKitchen();
         lookAtChalmers();
         ui.openDialogue({
           speaker: "Chalmers",
           line: "Yes, I should be—",
+          audio: "chalmers_should_be",
           continue: () => {
             lookAtFire();
             ui.openDialogue({
               speaker: "Chalmers",
               line: "GOOD LORD! What is happening in there?",
+              audio: "chalmers_good_lord",
               continue: () => {
                 lookAtChalmers();
                 ui.openDialogue({
                   speaker: "Skinner",
                   line: "Aurora Borealis.",
+                  audio: "skinner_aurora",
                   continue: () => auroraExchange(),
                 });
               },
@@ -727,18 +794,22 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "A—Aurora Borealis?",
+      audio: "chalmers_aurora",
       continue: () => {
         ui.openDialogue({
           speaker: "Chalmers",
           line: "At this time of year? At this time of day!?",
+          audio: "chalmers_time_of_year",
           continue: () => {
             ui.openDialogue({
               speaker: "Chalmers",
               line: "In this part of the country!?",
+              audio: "chalmers_part_of_country",
               continue: () => {
                 ui.openDialogue({
                   speaker: "Chalmers",
                   line: "Localized entirely within your kitchen?!?",
+                  audio: "chalmers_localized",
                   continue: () => {
                     ui.openDialogue({
                       speaker: "Skinner",
@@ -751,6 +822,7 @@ export function createStory(refs, lights, ui, player) {
                             ui.openDialogue({
                               speaker: "Skinner",
                               line: "Yes.",
+                              audio: "skinner_yes_aurora",
                               continue: () => mayISeeIt(),
                             });
                           },
@@ -771,6 +843,7 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: "May I see it?",
+      audio: "chalmers_may_i_see",
       choices: [
         {
           text: "No.",
@@ -778,6 +851,7 @@ export function createStory(refs, lights, ui, player) {
             ui.openDialogue({
               speaker: "Skinner",
               line: "No.",
+              audio: "skinner_no",
               continue: () => {
                 beginEscort();
                 ui.closeDialogue();
@@ -827,9 +901,11 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Mother",
       line: "Seymour! The house is on fire!",
+      audio: "mother_house_fire",
       choices: [
         {
           text: "No, mother, it's just the Northern Lights.",
+          audio: "skinner_northern_lights",
           next: () => chalmersFarewell(oddFellow),
         },
         {
@@ -846,6 +922,7 @@ export function createStory(refs, lights, ui, player) {
     ui.openDialogue({
       speaker: "Chalmers",
       line: oddFellow,
+      audio: "chalmers_odd_fellow",
       continue: () => {
         revealHouseFire();
         if (refs.firetruck) refs.firetruck.visible = true;

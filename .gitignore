@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Whisper work files (models + 16k converts)
+tools/whisper-models/
+tools/dialog-16k.wav
+tools/dialog-transcript*
+
+# Optional dialogue VO (copyrighted source — keep local only)
+public/audio/dialog.mp3
+public/audio/dialog.wav
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +31,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+public/audio/dialog.mp3
+public/audio/dialog.wav
+tools/dialog-mid.srt
